@@ -66,7 +66,7 @@ const Navbar = () => {
 
       await fetchWorkspaces();
 
-      setIsRenaming(false);
+      setIsLoading(false);
     }
 
     setIsRenaming(type === 'edit');
@@ -86,11 +86,11 @@ const Navbar = () => {
 
   return (
     <NavigationMenu className='fixed bottom-0 w-full flex justify-center'>
-      <div className='grow max-w-[1200px]'>
+      <div className='grow max-w-[1400px]'>
         <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
           <div className='flex gap-2 items-center'>
             <NavigationMenuItem>
-              <Button className='gap-2'>
+              <Button className='gap-2' variant='secondary'>
                 <Plus size={16} /> Add group
               </Button>
             </NavigationMenuItem>
