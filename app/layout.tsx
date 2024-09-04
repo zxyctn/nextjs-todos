@@ -26,8 +26,12 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Navbar />
+          <div className='w-full flex justify-center min-h-screen'>
+            <div className='max-w-[1400px] overflow-auto m-2'>
+              <div className='w-fit'>{children}</div>
+            </div>
+            <Navbar />
+          </div>
         </ThemeProvider>
       </body>
     </html>
