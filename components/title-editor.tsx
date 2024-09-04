@@ -5,12 +5,15 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Check, X } from 'lucide-react';
+import clsx from 'clsx';
 
 const TitleEditor = ({
   title,
+  size = 'lg',
   handleEditingChange,
 }: {
   title: string;
+  size?: '2xl' | 'xl' | 'lg';
   handleEditingChange: (
     type: 'save' | 'cancel' | 'edit',
     value?: string
@@ -58,8 +61,12 @@ const TitleEditor = ({
     </div>
   ) : (
     <Button
-      className='text-lg font-medium'
-      variant='ghost'
+      className={clsx('font-semibold justify-start p-0', {
+        'text-2xl': size === '2xl',
+        'text-xl': size === 'xl',
+        'text-lg': size === 'lg',
+      })}
+      variant='link'
       onClick={handleEditing}
     >
       {title}
