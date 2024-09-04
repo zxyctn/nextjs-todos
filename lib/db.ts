@@ -2,15 +2,25 @@ import prisma from './prisma';
 
 export const getWorkspaces = async (userId: string) => {
   const workspaces = await prisma.workspace.findMany({
-    where: { userId }, // TODO: replace with actual user id
-    orderBy: { selected: 'desc' },
+    where: { userId, selected: false }, // TODO: replace with actual user id
   });
-  return workspaces;
+
+  const selected = await prisma.workspace.findFirst({
+    where: { userId, selected: true },
+    include: {
+      groups: { include: { tasks: { include: { activities: true } } } },
+    },
+  });
+
+  return [selected, ...workspaces];
 };
 
 export const selectWorkspace = async (id: string) => {
   const workspace = await prisma.workspace.findFirst({
     where: { id },
+    include: {
+      groups: { include: { tasks: { include: { activities: true } } } },
+    },
   });
 
   await prisma.workspace.update({
