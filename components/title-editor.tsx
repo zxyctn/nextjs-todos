@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Check, X } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Check, X } from 'lucide-react';
-import clsx from 'clsx';
 
 const TitleEditor = ({
   title,
@@ -61,7 +61,7 @@ const TitleEditor = ({
     </div>
   ) : (
     <Button
-      className={clsx('font-semibold justify-start p-0', {
+      className={cn('font-semibold justify-start p-0', {
         'text-2xl': size === '2xl',
         'text-xl': size === 'xl',
         'text-lg': size === 'lg',
