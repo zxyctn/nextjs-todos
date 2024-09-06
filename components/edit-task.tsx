@@ -86,7 +86,7 @@ const EditTask = ({
               Activity
             </Label>
             {task.activities.map((activity: Activity) => (
-              <div className='flex flex-col'>
+              <div className='flex flex-col' key={activity.id}>
                 <div key={activity.id} className='text-sm italic'>
                   {activity.content}
                 </div>
