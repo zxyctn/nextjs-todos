@@ -3,6 +3,7 @@
 import TaskGroup from '@/components/task-group';
 import { Workspace } from '@prisma/client';
 import { useEffect, useState } from 'react';
+import type { GroupWithTasks } from '@/lib/prisma';
 
 const Home = () => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -12,8 +13,6 @@ const Home = () => {
     const workspaces = await fetch('/api/workspace').then((res) => res.json());
     setWorkspaces(workspaces);
     setCurrentWorkspace(workspaces[0]);
-
-    console.log(workspaces);
   };
 
   useEffect(() => {
@@ -22,9 +21,9 @@ const Home = () => {
 
   return (
     <div className='flex justify-center grow'>
-      <div className='grow pt-8'>
+      <div className='grow'>
         <div className='flex gap-32'>
-          {currentWorkspace?.groups.map((group: any) => (
+          {currentWorkspace?.groups.map((group: GroupWithTasks) => (
             <TaskGroup key={group.id} group={group} />
           ))}
         </div>
