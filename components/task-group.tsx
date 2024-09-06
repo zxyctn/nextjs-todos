@@ -1,15 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Loader2, Plus, Waves } from 'lucide-react';
+import { Loader2, Trash, Waves } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
 import Task from '@/components/task';
+import AddTask from '@/components/add-task';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import type { Group } from '@prisma/client';
-import { Card, CardContent } from './ui/card';
+import type { GroupWithTasks, TaskWithActivities } from '@/lib/prisma';
 
-const TaskGroup = ({ group }: { group: any }) => {
+const TaskGroup = ({ group }: { group: GroupWithTasks }) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [currentGroup, setCurrentGroup] = useState<Group>(group);
   const [isLoading, setIsLoading] = useState(true);
@@ -20,8 +22,8 @@ const TaskGroup = ({ group }: { group: any }) => {
   ) => {
     if (type === 'save') {
       setIsLoading(true);
-      
-			/* saving new name for the group */
+
+      /* saving new name for the group */
 
       setIsLoading(false);
     }
@@ -36,9 +38,9 @@ const TaskGroup = ({ group }: { group: any }) => {
   return isLoading ? (
     <Loader2 className='animate-spin' />
   ) : (
-    <div className='flex flex-col gap-4 w-[350px]'>
+    <div className='flex flex-col gap-4 w-[300px]'>
       <div className='flex gap-2 justify-between w-full'>
-        <div className='grow'>
+        <div className='overflow-auto grow'>
           <TitleEditor
             size='2xl'
             title={group.name}
@@ -47,9 +49,12 @@ const TaskGroup = ({ group }: { group: any }) => {
         </div>
 
         {!isRenaming && (
-          <Button size='icon' variant='secondary'>
-            <Plus size={16} />
-          </Button>
+          <div className='flex gap-1'>
+            <Button size='icon' variant='outline'>
+              <Trash size={16} />
+            </Button>
+            <AddTask group={group} />
+          </div>
         )}
       </div>
 
@@ -62,8 +67,8 @@ const TaskGroup = ({ group }: { group: any }) => {
             </div>
           ) : (
             <div className='flex flex-col gap-2 w-full'>
-              {group.tasks.map((task: any) => (
-                <Task task={task} key={task.id} />
+              {group.tasks.map((task: TaskWithActivities) => (
+                <Task task={task} groupName={group.name} key={task.id} />
               ))}
             </div>
           )}

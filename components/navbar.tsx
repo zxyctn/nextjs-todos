@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import clsx from 'clsx';
 import { ChevronUp, Loader2, LogOut, Plus, PlusIcon } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
+import { cn } from '@/lib/utils';
 import { LightSwitch } from '@/components/light-switch';
 import {
   NavigationMenu,
@@ -86,7 +86,7 @@ const Navbar = () => {
 
   return (
     <NavigationMenu className='fixed bottom-0 w-full flex justify-center'>
-      <div className='grow max-w-[1400px]'>
+      <div className='grow max-w-[1200px]'>
         <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
           <div className='flex gap-2 items-center'>
             <NavigationMenuItem>
@@ -129,7 +129,7 @@ const Navbar = () => {
                       </Button>
                       {workspaces.map((workspace) => (
                         <Button
-                          className={clsx('w-full justify-start', {
+                          className={cn('w-full justify-start', {
                             'cursor-default':
                               workspace.id === currentWorkspace.id,
                           })}
