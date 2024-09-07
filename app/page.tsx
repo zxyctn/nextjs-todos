@@ -78,10 +78,6 @@ const Home = () => {
     }
   };
 
-  const handleDragUpdate = (e) => {
-    console.log(e);
-  };
-
   useEffect(() => {
     fetchWorkspaces();
   }, []);
@@ -89,10 +85,7 @@ const Home = () => {
   return (
     <div className='flex justify-center grow'>
       <div className='grow'>
-        <DragDropContext
-          onDragEnd={handleDragEnd}
-          onDragUpdate={handleDragUpdate}
-        >
+        <DragDropContext onDragEnd={handleDragEnd}>
           <div className='flex gap-32'>
             {workspaceState.current.orderedGroups.map(
               (group: GroupWithOrderedTasks) => (
