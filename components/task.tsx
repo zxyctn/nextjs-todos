@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Trash } from 'lucide-react';
+import { Draggable } from 'react-beautiful-dnd';
+import { GripVertical, Trash } from 'lucide-react';
 
 import EditTask from '@/components/edit-task';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -17,35 +19,63 @@ import type { TaskWithActivities } from '@/lib/prisma';
 const Task = ({
   task,
   groupName,
+  index,
 }: {
   task: TaskWithActivities;
   groupName: string;
+  index: number;
 }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [mouseOver, setMouseOver] = useState(false);
 
   const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
   };
 
+  const handleMouseEvent = (value: boolean) => {
+    setMouseOver(value);
+  };
+
   return (
     <>
-      <Card className='bg-accent'>
-        <CardHeader
-          onClick={() => handleDialogOpenChange(true)}
-          className='cursor-pointer'
-        >
-          <CardTitle>{task.title}</CardTitle>
-          <CardDescription className='break-all'>
-            {task.description}
-          </CardDescription>
-        </CardHeader>
-        <CardFooter className='p-0 justify-end'>
-          <Button size='icon' variant='ghost' className=''>
-            <Trash size={16} />
-          </Button>
-        </CardFooter>
-      </Card>
+      <Draggable draggableId={task.id} index={index}>
+        {(provided, snapshot) => (
+          <Card
+            {...provided.draggableProps}
+            ref={provided.innerRef}
+            className='bg-accent my-2'
+            onMouseEnter={() => handleMouseEvent(true)}
+            onMouseLeave={() => handleMouseEvent(false)}
+          >
+            <CardHeader
+              onClick={() => handleDialogOpenChange(true)}
+              className='cursor-pointer'
+            >
+              <CardTitle>{task.title}</CardTitle>
+              <CardDescription className='break-all'>
+                {task.description}
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className='p-0 justify-between'>
+              <div
+                className='div h-10 w-10 flex items-center justify-center'
+                {...provided.dragHandleProps}
+              >
+                <GripVertical
+                  size={16}
+                  className={cn('transition-opacity', {
+                    'opacity-0': !mouseOver,
+                  })}
+                />
+              </div>
 
+              <Button size='icon' variant='ghost' className=''>
+                <Trash size={16} />
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
+      </Draggable>
       <EditTask
         task={task}
         groupName={groupName}
