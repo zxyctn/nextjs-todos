@@ -8,6 +8,7 @@ import TaskGroup from '@/components/task-group';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import {
   GroupWithOrderedTasks,
+  setIsDragDisabled,
   setOrderedTasks,
   setWorkspaces,
 } from '@/store/workspaceSlice';
@@ -37,8 +38,17 @@ const Home = () => {
     if (!destination) {
       return;
     }
+
     const sInd = +source.droppableId;
     const dInd = +destination.droppableId;
+
+    dispatch(
+      setIsDragDisabled({
+        value: true,
+        sourceDroppableId: sInd,
+        destinationDroppableId: dInd,
+      })
+    );
 
     const sourceGroup = workspaceState.current.groups.find(
       (group: Group) => +group.id === sInd
@@ -76,6 +86,14 @@ const Home = () => {
 
       await fetchWorkspaces();
     }
+
+    dispatch(
+      setIsDragDisabled({
+        value: false,
+        sourceDroppableId: -1,
+        destinationDroppableId: -1,
+      })
+    );
   };
 
   useEffect(() => {

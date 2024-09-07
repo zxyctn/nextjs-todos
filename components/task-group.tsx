@@ -1,17 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GripHorizontal, GripVertical, Trash, Waves } from 'lucide-react';
+import { GripHorizontal, Loader2, Trash, Waves } from 'lucide-react';
 import { Droppable } from 'react-beautiful-dnd';
 
 import TitleEditor from '@/components/title-editor';
 import Task from '@/components/task';
 import AddTask from '@/components/add-task';
+import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/store/store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { TaskWithActivities } from '@/lib/prisma';
-import { cn } from '@/lib/utils';
 
 const TaskGroup = ({ groupId }: { groupId: string }) => {
   const [isRenaming, setIsRenaming] = useState(false);
@@ -19,6 +19,9 @@ const TaskGroup = ({ groupId }: { groupId: string }) => {
 
   const currentGroup = useAppSelector((state) =>
     state.workspace.current.orderedGroups.find((g) => g.id === groupId)
+  );
+  const isDragDisabled = useAppSelector(
+    (state) => state.workspace.isDragDisabled
   );
 
   if (!currentGroup) return null;
@@ -73,9 +76,16 @@ const TaskGroup = ({ groupId }: { groupId: string }) => {
             onMouseEnter={() => handleMouseEvent(true)}
             onMouseLeave={() => handleMouseEvent(false)}
           >
+            {(isDragDisabled.sourceDroppableId === +currentGroup.id ||
+              isDragDisabled.destinationDroppableId === +currentGroup.id) && (
+              <div className='z-40 w-full h-full absolute rounded-xl flex items-center justify-center backdrop-blur-sm'>
+                <Loader2 className='animate-spin' />
+              </div>
+            )}
+
             <div
               className={cn(
-                'absolute -top-3 flex justify-center w-full transition-opacity',
+                'absolute -top-3 flex justify-center z-50 w-full transition-opacity',
                 {
                   'opacity-0': !mouseOver,
                 }

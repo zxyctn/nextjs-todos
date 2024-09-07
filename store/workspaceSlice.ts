@@ -20,6 +20,11 @@ export interface WorkspaceWithOrderedGroups extends WorkspaceWithGroups {
 const initialState: {
   current: WorkspaceWithOrderedGroups;
   workspaces: Workspace[];
+  isDragDisabled: {
+    value: boolean;
+    sourceDroppableId: number;
+    destinationDroppableId: number;
+  };
 } = {
   current: {
     id: '',
@@ -31,6 +36,11 @@ const initialState: {
     orderedGroups: [],
   },
   workspaces: [],
+  isDragDisabled: {
+    value: false,
+    sourceDroppableId: -1,
+    destinationDroppableId: -1,
+  },
 };
 
 export const workspaceSlice = createSlice({
@@ -91,6 +101,17 @@ export const workspaceSlice = createSlice({
         orderedGroups,
       };
     },
+
+    setIsDragDisabled: (
+      state,
+      action: PayloadAction<{
+        value: boolean;
+        sourceDroppableId: number;
+        destinationDroppableId: number;
+      }>
+    ) => {
+      state.isDragDisabled = action.payload;
+    },
   },
 });
 
@@ -99,5 +120,6 @@ export const {
   setCurrentWorkspace,
   setOrderedGroups,
   setOrderedTasks,
+  setIsDragDisabled,
 } = workspaceSlice.actions;
 export const workspaceReducer = workspaceSlice.reducer;

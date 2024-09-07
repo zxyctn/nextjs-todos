@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import { Draggable } from 'react-beautiful-dnd';
 import { GripVertical, Trash } from 'lucide-react';
 
 import EditTask from '@/components/edit-task';
+import { useAppSelector } from '@/store/store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,6 +29,10 @@ const Task = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
 
+  const isDragDisabled = useAppSelector(
+    (state) => state.workspace.isDragDisabled.value
+  );
+
   const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
   };
@@ -38,7 +43,11 @@ const Task = ({
 
   return (
     <>
-      <Draggable draggableId={task.id} index={index}>
+      <Draggable
+        draggableId={task.id}
+        index={index}
+        isDragDisabled={isDragDisabled}
+      >
         {(provided, snapshot) => (
           <Card
             {...provided.draggableProps}
