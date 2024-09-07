@@ -8,7 +8,9 @@ export const getWorkspaces = async (userId: string) => {
   const selected = await prisma.workspace.findFirst({
     where: { userId, selected: true },
     include: {
-      groups: { include: { tasks: { include: { activities: true } } } },
+      groups: {
+        include: { tasks: { include: { activities: true } } },
+      },
     },
   });
 
@@ -60,7 +62,28 @@ export const updateWorkspace = async (id: string, name: string) => {
   const workspace = await prisma.workspace.update({
     where: { id },
     data: { name },
+    include: {
+      groups: { include: { tasks: { include: { activities: true } } } },
+    },
   });
 
   return workspace;
+};
+
+export const updateGroupTaskOrder = async (id: string, taskOrder: number[]) => {
+  const group = await prisma.group.update({
+    where: { id },
+    data: { taskOrder },
+  });
+
+  return group;
+};
+
+export const updateGroupName = async (id: string, name: string) => {
+  const group = await prisma.group.update({
+    where: { id },
+    data: { name },
+  });
+
+  return group;
 };
