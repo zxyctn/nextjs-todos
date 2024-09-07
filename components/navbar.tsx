@@ -17,23 +17,20 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
-import type { Workspace } from '@prisma/client';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { setCurrentWorkspace, setWorkspaces } from '@/store/workspaceSlice';
+import ReduxProvider from '@/store/redux-provider';
 
 const Navbar = () => {
   const [popOverOpen, setPopOverOpen] = useState(false);
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [currentWorkspace, setCurrentWorkspace] = useState<Workspace>();
   const [isRenaming, setIsRenaming] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchWorkspaces = async () => {
-    const workspaces = await fetch('/api/workspace').then((res) => res.json());
-    setWorkspaces(workspaces);
-    setCurrentWorkspace(workspaces[0]);
-  };
+  const workspaceState = useAppSelector((state) => state.workspace);
+  const dispatch = useAppDispatch();
 
   const handleWorkspaceChange = async (id: string) => {
-    if (currentWorkspace && id === currentWorkspace.id) return;
+    if (workspaceState.current && id === workspaceState.current.id) return;
 
     const updatedWorkspace = await fetch(`/api/workspace/${id}`).then((res) =>
       res.json()
@@ -45,7 +42,7 @@ const Navbar = () => {
     }
 
     setPopOverOpen(false);
-    setCurrentWorkspace(updatedWorkspace);
+    dispatch(setCurrentWorkspace(updatedWorkspace));
   };
 
   const handleWorkspaceEditing = async (
@@ -58,13 +55,18 @@ const Navbar = () => {
       const updatedWorkspace = await fetch(`/api/workspace`, {
         method: 'PUT',
         body: JSON.stringify({
-          id: currentWorkspace?.id || '',
+          id: workspaceState.current?.id || '',
           name: value,
         }),
       }).then((res) => res.json());
-      setCurrentWorkspace(updatedWorkspace);
 
-      await fetchWorkspaces();
+      dispatch(
+        setWorkspaces(
+          workspaceState.workspaces.map((workspace) =>
+            workspace.id === updatedWorkspace.id ? updatedWorkspace : workspace
+          )
+        )
+      );
 
       setIsLoading(false);
     }
@@ -73,16 +75,12 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    fetchWorkspaces();
-  }, []);
-
-  useEffect(() => {
-    if (currentWorkspace) {
+    if (workspaceState.current) {
       setIsLoading(false);
     } else {
       setIsLoading(true);
     }
-  }, [currentWorkspace]);
+  }, [workspaceState.current]);
 
   return (
     <NavigationMenu className='fixed bottom-0 w-full flex justify-center'>
@@ -97,10 +95,10 @@ const Navbar = () => {
           </div>
 
           <NavigationMenuItem>
-            {currentWorkspace && !isLoading && (
+            {workspaceState.current.name && !isLoading && (
               <div className='flex items-center gap-4'>
                 <TitleEditor
-                  title={currentWorkspace.name}
+                  title={workspaceState.current.name}
                   handleEditingChange={handleWorkspaceEditing}
                 />
                 {!isRenaming && (
@@ -127,20 +125,20 @@ const Navbar = () => {
                           <PlusIcon size={16} /> Create new workspace
                         </div>
                       </Button>
-                      {workspaces.map((workspace) => (
+                      {workspaceState.workspaces.map((workspace) => (
                         <Button
                           className={cn('w-full justify-start', {
                             'cursor-default':
-                              workspace.id === currentWorkspace.id,
+                              workspace.id === workspaceState.current.id,
                           })}
                           key={workspace.id}
                           onClick={() =>
-                            workspace.id !== currentWorkspace?.id
+                            workspace.id !== workspaceState.current?.id
                               ? handleWorkspaceChange(workspace.id)
                               : null
                           }
                           variant={
-                            workspace.id === currentWorkspace.id
+                            workspace.id === workspaceState.current.id
                               ? 'secondary'
                               : 'ghost'
                           }
@@ -172,4 +170,12 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+const NavbarWrapper = () => {
+  return (
+    <ReduxProvider>
+      <Navbar />
+    </ReduxProvider>
+  );
+};
+
+export default NavbarWrapper;

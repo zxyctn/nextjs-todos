@@ -61,11 +61,7 @@ const EditTask = ({
               size='2xl'
               handleEditingChange={handleTitleEditing}
             />
-            <p
-              className={cn('text-xs', {
-                'pt-2': isEditingTitle,
-              })}
-            >
+            <p className='text-xs pt-2'>
               In group <span className='font-bold'>{groupName}</span>
             </p>
           </div>

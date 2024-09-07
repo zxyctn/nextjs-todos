@@ -18,7 +18,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Group } from '@prisma/client';
 
-const AddTask = ({ group }: { group: Group }) => {
+const AddTask = ({
+  groupId,
+  groupName,
+}: {
+  groupId: string;
+  groupName: string;
+}) => {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState('Untitled');
   const [description, setDescription] = useState('');
@@ -55,12 +61,8 @@ const AddTask = ({ group }: { group: Group }) => {
               size='2xl'
               handleEditingChange={handleTitleEditing}
             />
-            <p
-              className={cn('text-xs', {
-                'pt-2': isEditingTitle,
-              })}
-            >
-              In group <span className='font-bold'>{group.name}</span>
+            <p className='text-xs pt-2'>
+              In group <span className='font-bold'>{groupName}</span>
             </p>
           </div>
           <div className='flex flex-col gap-2'>
