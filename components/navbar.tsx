@@ -84,7 +84,7 @@ const Navbar = () => {
 
   return (
     <NavigationMenu className='fixed bottom-0 w-full flex justify-center'>
-      <div className='grow max-w-[1200px]'>
+      <div className='grow max-w-[1400px]'>
         <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
           <div className='flex gap-2 items-center'>
             <NavigationMenuItem>
@@ -98,7 +98,7 @@ const Navbar = () => {
             {workspaceState.current.name && !isLoading && (
               <div className='flex items-center gap-4'>
                 <TitleEditor
-                  title={workspaceState.current.name}
+                  name={workspaceState.current.name}
                   handleEditingChange={handleWorkspaceEditing}
                 />
                 {!isRenaming && (
