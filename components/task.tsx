@@ -1,7 +1,7 @@
 'use client';
 
 import React, { use, useState } from 'react';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { GripVertical, Trash } from 'lucide-react';
 
 import EditTask from '@/components/edit-task';
@@ -44,7 +44,7 @@ const Task = ({
   return (
     <>
       <Draggable
-        draggableId={task.id}
+        draggableId={`task-${task.id}`}
         index={index}
         isDragDisabled={isDragDisabled}
       >
@@ -60,7 +60,7 @@ const Task = ({
               onClick={() => handleDialogOpenChange(true)}
               className='cursor-pointer'
             >
-              <CardTitle>{task.title}</CardTitle>
+              <CardTitle>{task.name}</CardTitle>
               <CardDescription className='break-all'>
                 {task.description}
               </CardDescription>

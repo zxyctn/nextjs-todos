@@ -87,3 +87,42 @@ export const updateGroupName = async (id: string, name: string) => {
 
   return group;
 };
+
+export const updateWorkspaceGroupOrder = async (
+  id: string,
+  groupOrder: number[]
+) => {
+  const group = await prisma.workspace.update({
+    where: { id },
+    data: { groupOrder },
+  });
+
+  return group;
+};
+
+export const updateWorkspaceName = async (id: string, name: string) => {
+  const group = await prisma.workspace.update({
+    where: { id },
+    data: { name },
+  });
+
+  return group;
+};
+
+export const updateTaskGroup = async (id: string, groupId: string) => {
+  const task = await prisma.task.update({
+    where: { id },
+    data: { groupId },
+  });
+
+  return task;
+}
+
+export const updateTaskName = async (id: string, name: string) => {
+  const task = await prisma.task.update({
+    where: { id },
+    data: { name },
+  });
+
+  return task;
+}
