@@ -18,7 +18,7 @@ model Activity {
 
 model Task {
   id            String     @default(cuid()) @id
-  title         String
+  name          String
   description   String?
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   group         Group      @relation(fields: [groupId], references: [id])

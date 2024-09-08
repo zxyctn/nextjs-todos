@@ -8,18 +8,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 const TitleEditor = ({
-  title,
+  name,
   size = 'lg',
   handleEditingChange,
 }: {
-  title: string;
+  name: string;
   size?: '2xl' | 'xl' | 'lg';
   handleEditingChange: (
     type: 'save' | 'cancel' | 'edit',
     value?: string
   ) => void;
 }) => {
-  const [value, setValue] = useState(title);
+  const [value, setValue] = useState(name);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleEditing = () => {
@@ -33,7 +33,7 @@ const TitleEditor = ({
   };
 
   const handleCancel = () => {
-    setValue(title);
+    setValue(name);
     setIsEditing(false);
     handleEditingChange('cancel');
   };
@@ -69,7 +69,7 @@ const TitleEditor = ({
       variant='link'
       onClick={handleEditing}
     >
-      {title}
+      {name}
     </Button>
   );
 };

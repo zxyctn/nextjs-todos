@@ -16,7 +16,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Group } from '@prisma/client';
 
 const AddTask = ({
   groupId,
@@ -25,18 +24,18 @@ const AddTask = ({
   groupId: string;
   groupName: string;
 }) => {
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [title, setTitle] = useState('Untitled');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState('Untitled');
   const [description, setDescription] = useState('');
 
-  const handleTitleEditing = async (
+  const handleNameEditing = async (
     type: 'save' | 'cancel' | 'edit',
     value: string = ''
   ) => {
     if (type === 'save') {
-      setTitle(value);
+      setName(value);
     }
-    setIsEditingTitle(type === 'edit');
+    setIsEditingName(type === 'edit');
   };
 
   const handleDescriptionChange = (
@@ -52,14 +51,14 @@ const AddTask = ({
           <Plus size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn({ hideX: isEditingTitle })}>
+      <DialogContent className={cn({ hideX: isEditingName })}>
         <DialogTitle className='hidden'>Add task</DialogTitle>
         <div className='flex flex-col gap-8'>
           <div className='flex flex-col'>
             <TitleEditor
-              title={title}
+              name={name}
               size='2xl'
-              handleEditingChange={handleTitleEditing}
+              handleEditingChange={handleNameEditing}
             />
             <p className='text-xs pt-2'>
               In group <span className='font-bold'>{groupName}</span>

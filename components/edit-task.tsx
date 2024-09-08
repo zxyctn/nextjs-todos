@@ -30,8 +30,8 @@ const EditTask = ({
   open: boolean;
   handleDialogOpenChange: any;
 }) => {
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [title, setTitle] = useState(task.title);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState(task.name);
   const [description, setDescription] = useState(task.description || '');
 
   const handleTitleEditing = async (
@@ -39,9 +39,9 @@ const EditTask = ({
     value: string = ''
   ) => {
     if (type === 'save') {
-      setTitle(value);
+      setName(value);
     }
-    setIsEditingTitle(type === 'edit');
+    setIsEditingName(type === 'edit');
   };
 
   const handleDescriptionChange = (
@@ -52,12 +52,12 @@ const EditTask = ({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className={cn({ hideX: isEditingTitle })}>
+      <DialogContent className={cn({ hideX: isEditingName })}>
         <DialogTitle className='hidden'>Add task</DialogTitle>
         <div className='flex flex-col gap-8'>
           <div className='flex flex-col'>
             <TitleEditor
-              title={title}
+              name={name}
               size='2xl'
               handleEditingChange={handleTitleEditing}
             />
