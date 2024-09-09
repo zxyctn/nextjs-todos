@@ -8,7 +8,8 @@ import TitleEditor from '@/components/title-editor';
 import Task from '@/components/task';
 import AddTask from '@/components/add-task';
 import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/store/store';
+import { useAppDispatch, useAppSelector } from '@/store/store';
+import { setGroupName, setIsDragDisabled } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { TaskWithActivities } from '@/lib/prisma';
@@ -16,6 +17,8 @@ import type { TaskWithActivities } from '@/lib/prisma';
 const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
   const [isRenaming, setIsRenaming] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
+
+  const dispatch = useAppDispatch();
 
   const currentGroup = useAppSelector((state) =>
     state.workspace.current.orderedGroups.find((g) => g.id === groupId)
@@ -30,14 +33,32 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
     setMouseOver(value);
   };
 
-  const handleTitleEditing = async (
+  const handleNameEditing = async (
     type: 'save' | 'cancel' | 'edit',
     value: string = ''
   ) => {
     if (type === 'save') {
-      //   setIsLoading(true);
-      /* saving new name for the group */
-      // setIsLoading(false);
+      dispatch(
+        setIsDragDisabled({
+          value: true,
+          sourceDroppableId: +groupId,
+          destinationDroppableId: -1,
+        })
+      );
+
+      await fetch(`/api/group/${groupId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name: value }),
+      });
+
+      dispatch(setGroupName({ id: groupId, name: value }));
+      dispatch(
+        setIsDragDisabled({
+          value: false,
+          sourceDroppableId: -1,
+          destinationDroppableId: -1,
+        })
+      );
     }
 
     setIsRenaming(type === 'edit');
@@ -56,7 +77,11 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
               <TitleEditor
                 size='2xl'
                 name={currentGroup.name}
-                handleEditingChange={handleTitleEditing}
+                handleEditingChange={handleNameEditing}
+                disabled={
+                  isDragDisabled.sourceDroppableId === +currentGroup.id ||
+                  isDragDisabled.destinationDroppableId === +currentGroup.id
+                }
               />
             </div>
 

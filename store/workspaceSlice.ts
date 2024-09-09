@@ -102,6 +102,20 @@ export const workspaceSlice = createSlice({
       };
     },
 
+    setGroupName: (
+      state,
+      action: PayloadAction<{ id: string; name: string }>
+    ) => {
+      state.current = getCurrentWorkspace({
+        ...state.current,
+        groups: state.current.groups.map((group) =>
+          group.id === action.payload.id
+            ? { ...group, name: action.payload.name }
+            : group
+        ),
+      });
+    },
+
     setIsDragDisabled: (
       state,
       action: PayloadAction<{
@@ -120,6 +134,7 @@ export const {
   setCurrentWorkspace,
   setOrderedGroups,
   setOrderedTasks,
+  setGroupName,
   setIsDragDisabled,
 } = workspaceSlice.actions;
 export const workspaceReducer = workspaceSlice.reducer;

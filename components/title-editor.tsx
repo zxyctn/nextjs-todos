@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input';
 const TitleEditor = ({
   name,
   size = 'lg',
+  disabled = false,
   handleEditingChange,
 }: {
   name: string;
   size?: '2xl' | 'xl' | 'lg';
+  disabled?: boolean;
   handleEditingChange: (
     type: 'save' | 'cancel' | 'edit',
     value?: string
@@ -49,12 +51,18 @@ const TitleEditor = ({
         placeholder='Title'
         value={value}
         onChange={handleChange}
+        disabled={disabled}
       />
       <div className='flex gap-1'>
-        <Button onClick={handleCancel} size='icon' variant='outline'>
+        <Button
+          onClick={handleCancel}
+          size='icon'
+          variant='outline'
+          disabled={disabled}
+        >
           <X size={16} />
         </Button>
-        <Button onClick={handleSave} size='icon'>
+        <Button onClick={handleSave} size='icon' disabled={disabled}>
           <Check size={16} />
         </Button>
       </div>
@@ -68,6 +76,7 @@ const TitleEditor = ({
       })}
       variant='link'
       onClick={handleEditing}
+      disabled={disabled}
     >
       {name}
     </Button>
