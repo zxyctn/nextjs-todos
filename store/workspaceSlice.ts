@@ -25,6 +25,7 @@ const initialState: {
     sourceDroppableId: number;
     destinationDroppableId: number;
   };
+  isLoading: boolean;
 } = {
   current: {
     id: '',
@@ -41,6 +42,7 @@ const initialState: {
     sourceDroppableId: -1,
     destinationDroppableId: -1,
   },
+  isLoading: false,
 };
 
 export const workspaceSlice = createSlice({
@@ -126,6 +128,10 @@ export const workspaceSlice = createSlice({
     ) => {
       state.isDragDisabled = action.payload;
     },
+
+    setIsLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
   },
 });
 
@@ -136,5 +142,6 @@ export const {
   setOrderedTasks,
   setGroupName,
   setIsDragDisabled,
+  setIsLoading,
 } = workspaceSlice.actions;
 export const workspaceReducer = workspaceSlice.reducer;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 
 import ReduxProvider from '@/store/redux-provider';
@@ -10,18 +10,14 @@ import {
   GroupWithOrderedTasks,
   setCurrentWorkspace,
   setIsDragDisabled,
+  setIsLoading,
   setOrderedTasks,
   setWorkspaces,
 } from '@/store/workspaceSlice';
 import type { Group } from '@prisma/client';
 import type { WorkspaceWithGroups } from '@/lib/prisma';
-import { Loader2 } from 'lucide-react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/lib/utils';
 
 const Home = () => {
-  const [isLoading, setIsLoading] = useState(false);
-
   const workspaceState = useAppSelector((state) => state.workspace);
   const dispatch = useAppDispatch();
 
@@ -167,7 +163,7 @@ const Home = () => {
         +result.draggableId.split('-')[1]
       );
 
-      setIsLoading(true);
+      dispatch(setIsLoading(true));
 
       dispatch(
         setCurrentWorkspace({
@@ -188,15 +184,15 @@ const Home = () => {
 
       await fetchWorkspaces();
 
-      setIsLoading(false);
+      dispatch(setIsLoading(false));
     }
   };
 
   useEffect(() => {
     const init = async () => {
-      setIsLoading(true);
+      dispatch(setIsLoading(true));
       await fetchWorkspaces();
-      setIsLoading(false);
+      dispatch(setIsLoading(false));
     };
 
     init();
@@ -204,19 +200,6 @@ const Home = () => {
 
   return (
     <div className='flex justify-center grow'>
-      {document && createPortal(
-        <div
-          className={cn(
-            'fixed h-full w-full flex items-center justify-center backdrop-blur-xl z-50',
-            {
-              hidden: !isLoading,
-            }
-          )}
-        >
-          <Loader2 size={32} className='animate-spin' />
-        </div>,
-        document.body
-      )}
       <div className='grow'>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable
