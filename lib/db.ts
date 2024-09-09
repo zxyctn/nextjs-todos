@@ -9,7 +9,15 @@ export const getWorkspaces = async (userId: string) => {
     where: { userId, selected: true },
     include: {
       groups: {
-        include: { tasks: { include: { activities: true } } },
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
       },
     },
   });
@@ -21,7 +29,17 @@ export const selectWorkspace = async (id: string) => {
   const workspace = await prisma.workspace.findFirst({
     where: { id },
     include: {
-      groups: { include: { tasks: { include: { activities: true } } } },
+      groups: {
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -63,7 +81,17 @@ export const updateWorkspace = async (id: string, name: string) => {
     where: { id },
     data: { name },
     include: {
-      groups: { include: { tasks: { include: { activities: true } } } },
+      groups: {
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -113,10 +141,23 @@ export const updateTaskGroup = async (id: string, groupId: string) => {
   const task = await prisma.task.update({
     where: { id },
     data: { groupId },
+    include: {
+      activities: {
+        orderBy: { createdAt: 'desc' },
+      },
+      group: { select: { name: true } },
+    },
+  });
+
+  await prisma.activity.create({
+    data: {
+      taskId: id,
+      content: `Task moved to group ${task.group.name}`,
+    },
   });
 
   return task;
-}
+};
 
 export const updateTaskName = async (id: string, name: string) => {
   const task = await prisma.task.update({
@@ -125,4 +166,4 @@ export const updateTaskName = async (id: string, name: string) => {
   });
 
   return task;
-}
+};
