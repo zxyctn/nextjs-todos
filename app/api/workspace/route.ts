@@ -3,6 +3,7 @@ import {
   createWorkspace,
   updateWorkspace,
   deleteWorkspace,
+  selectWorkspace,
 } from '@/lib/db';
 
 export const dynamic = 'force-static';
@@ -17,8 +18,7 @@ export async function POST(req: Request) {
   const { name } = await req.json();
 
   const workspace = await createWorkspace(name);
-
-  return Response.json(workspace);
+  return Response.json(await selectWorkspace(workspace.id));
 }
 
 export async function PUT(req: Request) {
@@ -26,7 +26,7 @@ export async function PUT(req: Request) {
 
   const workspace = await updateWorkspace(id, name);
 
-  return Response.json(workspace);
+  return Response.json(await selectWorkspace(workspace.id));
 }
 
 export async function DELETE(req: Request) {

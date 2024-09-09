@@ -18,19 +18,25 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setCurrentWorkspace, setWorkspaces } from '@/store/workspaceSlice';
+import {
+  setCurrentWorkspace,
+  setIsLoading,
+  setWorkspaces,
+} from '@/store/workspaceSlice';
 import ReduxProvider from '@/store/redux-provider';
 
 const Navbar = () => {
   const [popOverOpen, setPopOverOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   const workspaceState = useAppSelector((state) => state.workspace);
+  const currentWorkspace = useAppSelector((state) => state.workspace.current);
   const dispatch = useAppDispatch();
 
   const handleWorkspaceChange = async (id: string) => {
-    if (workspaceState.current && id === workspaceState.current.id) return;
+    if (currentWorkspace && id === currentWorkspace.id) return;
+
+    dispatch(setIsLoading(true));
 
     const updatedWorkspace = await fetch(`/api/workspace/${id}`).then((res) =>
       res.json()
@@ -41,8 +47,10 @@ const Navbar = () => {
       throw new Error('Failed to select workspace');
     }
 
-    setPopOverOpen(false);
     dispatch(setCurrentWorkspace(updatedWorkspace));
+    setPopOverOpen(false);
+
+    dispatch(setIsLoading(false));
   };
 
   const handleWorkspaceEditing = async (
@@ -50,12 +58,12 @@ const Navbar = () => {
     value: string = ''
   ) => {
     if (type === 'save') {
-      setIsLoading(true);
+      dispatch(setIsLoading(true));
 
       const updatedWorkspace = await fetch(`/api/workspace`, {
         method: 'PUT',
         body: JSON.stringify({
-          id: workspaceState.current?.id || '',
+          id: currentWorkspace?.id || '',
           name: value,
         }),
       }).then((res) => res.json());
@@ -68,19 +76,27 @@ const Navbar = () => {
         )
       );
 
-      setIsLoading(false);
+      dispatch(setIsLoading(false));
     }
 
     setIsRenaming(type === 'edit');
   };
 
-  useEffect(() => {
-    if (workspaceState.current) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
-  }, [workspaceState.current]);
+  const handleWorkspaceCreate = async () => {
+    dispatch(setIsLoading(true));
+
+    await fetch(`/api/workspace`, {
+      method: 'POST',
+      body: JSON.stringify({
+        name: 'New workspace',
+      }),
+    }).then((res) => res.json());
+
+    const workspaces = await fetch(`/api/workspace`).then((res) => res.json());
+    dispatch(setWorkspaces(workspaces));
+
+    dispatch(setIsLoading(false));
+  };
 
   return (
     <NavigationMenu className='fixed bottom-0 w-full flex justify-center'>
@@ -95,10 +111,10 @@ const Navbar = () => {
           </div>
 
           <NavigationMenuItem>
-            {workspaceState.current.name && !isLoading && (
+            {currentWorkspace && !workspaceState.isLoading && (
               <div className='flex items-center gap-4'>
                 <TitleEditor
-                  name={workspaceState.current.name}
+                  name={currentWorkspace.name}
                   handleEditingChange={handleWorkspaceEditing}
                 />
                 {!isRenaming && (
@@ -120,7 +136,10 @@ const Navbar = () => {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className='p-2 space-y-2'>
-                      <Button className='w-full justify-start'>
+                      <Button
+                        className='w-full justify-start'
+                        onClick={handleWorkspaceCreate}
+                      >
                         <div className='flex gap-2 items-center'>
                           <PlusIcon size={16} /> Create new workspace
                         </div>
@@ -129,16 +148,16 @@ const Navbar = () => {
                         <Button
                           className={cn('w-full justify-start', {
                             'cursor-default':
-                              workspace.id === workspaceState.current.id,
+                              workspace.id === currentWorkspace.id,
                           })}
                           key={workspace.id}
                           onClick={() =>
-                            workspace.id !== workspaceState.current?.id
+                            workspace.id !== currentWorkspace?.id
                               ? handleWorkspaceChange(workspace.id)
                               : null
                           }
                           variant={
-                            workspace.id === workspaceState.current.id
+                            workspace.id === currentWorkspace.id
                               ? 'secondary'
                               : 'ghost'
                           }
@@ -151,7 +170,7 @@ const Navbar = () => {
                 )}
               </div>
             )}
-            {isLoading && <Loader2 className='animate-spin' />}
+            {workspaceState.isLoading && <Loader2 className='animate-spin' />}
           </NavigationMenuItem>
 
           <div className='flex gap-2 items-center'>

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
+import { Waves } from 'lucide-react';
 
 import ReduxProvider from '@/store/redux-provider';
 import TaskGroup from '@/components/task-group';
@@ -226,6 +227,13 @@ const Home = () => {
           </Droppable>
         </DragDropContext>
       </div>
+
+      {workspaceState.current.groups.length === 0 && (
+        <div className='fixed flex flex-col gap-2 items-center justify-center text-muted-foreground h-full w-full'>
+          <Waves />
+          <span className='text-xs'>No groups in this workspace</span>
+        </div>
+      )}
     </div>
   );
 };
