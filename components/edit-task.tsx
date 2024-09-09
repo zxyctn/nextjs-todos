@@ -2,10 +2,7 @@
 
 import React, { useState } from 'react';
 import moment from 'moment';
-import { Trash } from 'lucide-react';
 
-import TitleEditor from '@/components/title-editor';
-import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +12,9 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 import type { Activity } from '@prisma/client';
 import type { TaskWithActivities } from '@/lib/prisma';
 
@@ -30,18 +29,11 @@ const EditTask = ({
   open: boolean;
   handleDialogOpenChange: any;
 }) => {
-  const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState(task.name);
   const [description, setDescription] = useState(task.description || '');
 
-  const handleTitleEditing = async (
-    type: 'save' | 'cancel' | 'edit',
-    value: string = ''
-  ) => {
-    if (type === 'save') {
-      setName(value);
-    }
-    setIsEditingName(type === 'edit');
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
   };
 
   const handleDescriptionChange = (
@@ -52,18 +44,28 @@ const EditTask = ({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogOpenChange}>
-      <DialogContent className={cn({ hideX: isEditingName })}>
+      <DialogContent className='min-h overflow-auto'>
         <DialogTitle className='hidden'>Add task</DialogTitle>
         <div className='flex flex-col gap-8'>
           <div className='flex flex-col'>
-            <TitleEditor
-              name={name}
-              size='2xl'
-              handleEditingChange={handleTitleEditing}
-            />
-            <p className='text-xs pt-2'>
-              In group <span className='font-bold'>{groupName}</span>
-            </p>
+            <div className='flex flex-col gap-2'>
+              <Label
+                htmlFor={`edit-task-${task.id}`}
+                className='text-lg font-semibold'
+              >
+                Title
+              </Label>
+              <Input
+                id={`edit-task-${task.id}`}
+                type='text'
+                className=''
+                value={name}
+                onChange={handleNameChange}
+              />
+              <p className='text-xs'>
+                In group <span className='font-bold'>{groupName}</span>
+              </p>
+            </div>
           </div>
           <div className='flex flex-col gap-2'>
             <Label htmlFor='description' className='text-lg font-semibold'>
@@ -81,16 +83,35 @@ const EditTask = ({
             <Label htmlFor='activity' className='text-lg font-semibold'>
               Activity
             </Label>
-            {task.activities.map((activity: Activity) => (
-              <div className='flex flex-col' key={activity.id}>
-                <div key={activity.id} className='text-sm italic'>
-                  {activity.content}
+            <div className='max-h-[200px] flex flex-col overflow-auto gap-2'>
+              {task.activities.map((activity: Activity, index: number) => (
+                <div className='flex flex-col' key={activity.id}>
+                  <div className='flex gap-4'>
+                    <div className='pt-2'>
+                      <div className='size-2 bg-primary/20 rounded-full'></div>
+                    </div>
+
+                    <div className=''>
+                      <div key={activity.id} className='text-sm'>
+                        {activity.content}
+                      </div>
+                      <div className='text-xs text-muted-foreground'>
+                        {moment(activity.createdAt).fromNow()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {index !== task.activities.length - 1 && (
+                    <div className='w-2 flex justify-center'>
+                      <Separator
+                        orientation='vertical'
+                        className='h-8 -mt-1 bg-primary/20'
+                      />
+                    </div>
+                  )}
                 </div>
-                <div className='text-xs text-muted-foreground'>
-                  {moment(activity.createdAt).fromNow()}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
         <DialogFooter className='w-full pt-4'>

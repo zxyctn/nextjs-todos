@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 
-import TitleEditor from '@/components/title-editor';
-import { cn } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +12,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -24,18 +23,11 @@ const AddTask = ({
   groupId: string;
   groupName: string;
 }) => {
-  const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState('Untitled');
   const [description, setDescription] = useState('');
 
-  const handleNameEditing = async (
-    type: 'save' | 'cancel' | 'edit',
-    value: string = ''
-  ) => {
-    if (type === 'save') {
-      setName(value);
-    }
-    setIsEditingName(type === 'edit');
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value);
   };
 
   const handleDescriptionChange = (
@@ -51,18 +43,28 @@ const AddTask = ({
           <Plus size={16} />
         </Button>
       </DialogTrigger>
-      <DialogContent className={cn({ hideX: isEditingName })}>
+      <DialogContent>
         <DialogTitle className='hidden'>Add task</DialogTitle>
         <div className='flex flex-col gap-8'>
           <div className='flex flex-col'>
-            <TitleEditor
-              name={name}
-              size='2xl'
-              handleEditingChange={handleNameEditing}
-            />
-            <p className='text-xs pt-2'>
-              In group <span className='font-bold'>{groupName}</span>
-            </p>
+            <div className='flex flex-col gap-2'>
+              <Label
+                htmlFor={`add-task-${groupId}`}
+                className='text-lg font-semibold'
+              >
+                Title
+              </Label>
+              <Input
+                id={`add-task-${groupId}`}
+                type='text'
+                className=''
+                value={name}
+                onChange={handleNameChange}
+              />
+              <p className='text-xs'>
+                In group <span className='font-bold'>{groupName}</span>
+              </p>
+            </div>
           </div>
           <div className='flex flex-col gap-2'>
             <Label htmlFor='description'>Description</Label>
@@ -70,6 +72,7 @@ const AddTask = ({
               placeholder='Task description'
               id='description'
               onChange={handleDescriptionChange}
+              value={description}
             />
           </div>
         </div>
