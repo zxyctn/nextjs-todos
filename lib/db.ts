@@ -159,10 +159,34 @@ export const updateTaskGroup = async (id: string, groupId: string) => {
   return task;
 };
 
-export const updateTaskName = async (id: string, name: string) => {
-  const task = await prisma.task.update({
+export const updateTaskContent = async (
+  id: string,
+  content: { name?: string; description?: string }
+) => {
+  const newContent: { [key: string]: string } = {};
+
+  if (content.name) newContent.name = content.name;
+  if (content.description) newContent.description = content.description;
+
+  await prisma.task.update({
     where: { id },
-    data: { name },
+    data: { ...newContent },
+  });
+
+  await prisma.activity.create({
+    data: {
+      taskId: id,
+      content: `Task content updated`,
+    },
+  });
+
+  const task = await prisma.task.findFirst({
+    where: { id },
+    include: {
+      activities: {
+        orderBy: { createdAt: 'desc' },
+      },
+    },
   });
 
   return task;

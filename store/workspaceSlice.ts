@@ -6,7 +6,7 @@ import {
   GroupWithTasks,
   TaskWithActivities,
 } from '@/lib/prisma';
-import { Workspace } from '@prisma/client';
+import { Activity, Workspace } from '@prisma/client';
 import { getCurrentWorkspace, orderGroups, orderTasks } from '@/lib/utils';
 
 export interface GroupWithOrderedTasks extends GroupWithTasks {
@@ -132,6 +132,44 @@ export const workspaceSlice = createSlice({
     setIsLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
     },
+
+    setTaskContent: (
+      state,
+      action: PayloadAction<{
+        id: string;
+        name?: string;
+        description?: string;
+        activities: Activity[];
+      }>
+    ) => {
+      const newTaskContent: { [key: string]: string } = {};
+
+      if (action.payload.name) {
+        newTaskContent.name = action.payload.name;
+      }
+
+      if (action.payload.description) {
+        newTaskContent.description = action.payload.description;
+      }
+
+      state.current = getCurrentWorkspace({
+        ...state.current,
+        groups: state.current.groups.map((group) => {
+          return {
+            ...group,
+            tasks: group.tasks.map((task) =>
+              task.id === action.payload.id
+                ? {
+                    ...task,
+                    ...newTaskContent,
+                    activities: [...action.payload.activities],
+                  }
+                : task
+            ),
+          };
+        }),
+      });
+    },
   },
 });
 
@@ -143,5 +181,6 @@ export const {
   setGroupName,
   setIsDragDisabled,
   setIsLoading,
+  setTaskContent,
 } = workspaceSlice.actions;
 export const workspaceReducer = workspaceSlice.reducer;

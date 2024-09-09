@@ -1,4 +1,4 @@
-import { updateTaskGroup, updateTaskName } from '@/lib/db';
+import { updateTaskGroup, updateTaskContent } from '@/lib/db';
 import { NextRequest } from 'next/server';
 
 export async function PATCH(
@@ -10,8 +10,11 @@ export async function PATCH(
 
   if (Object.keys(data).includes('groupId')) {
     task = await updateTaskGroup(params.id, data.groupId);
-  } else if (Object.keys(data).includes('name')) {
-    task = await updateTaskName(params.id, data.name);
+  } else if (
+    Object.keys(data).includes('name') ||
+    Object.keys(data).includes('description')
+  ) {
+    task = await updateTaskContent(params.id, data);
   }
 
   return Response.json(task);

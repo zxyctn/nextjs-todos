@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import moment from 'moment';
+import { Loader2 } from 'lucide-react';
 
 import {
   Dialog,
@@ -10,6 +11,8 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog';
+import { useAppDispatch } from '@/store/store';
+import { setTaskContent } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -31,6 +34,9 @@ const EditTask = ({
 }) => {
   const [name, setName] = useState(task.name);
   const [description, setDescription] = useState(task.description || '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
@@ -40,6 +46,25 @@ const EditTask = ({
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setDescription(e.target.value);
+  };
+
+  const handleEditTaskSubmit = async (
+    e: React.FormEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+
+    setIsSaving(true);
+
+    const updatedTask = await fetch(`/api/task/${task.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name, description }),
+    });
+    const { activities } = await updatedTask.json();
+    dispatch(setTaskContent({ id: task.id, name, description, activities }));
+
+    handleDialogOpenChange(false);
+
+    setIsSaving(false);
   };
 
   return (
@@ -61,6 +86,7 @@ const EditTask = ({
                 className=''
                 value={name}
                 onChange={handleNameChange}
+                required
               />
               <p className='text-xs'>
                 In group <span className='font-bold'>{groupName}</span>
@@ -116,16 +142,32 @@ const EditTask = ({
         </div>
         <DialogFooter className='w-full pt-4'>
           <div className='flex justify-between w-full gap-2'>
-            <Button variant='destructive' className=''>
+            <Button
+              type='button'
+              variant='destructive'
+              className=''
+              disabled={isSaving}
+            >
               Delete
             </Button>
             <div className='flex gap-2'>
               <DialogClose asChild>
-                <Button type='button' variant='ghost'>
+                <Button type='button' variant='ghost' disabled={isSaving}>
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type='submit'>Save</Button>
+              <Button
+                type='submit'
+                onClick={handleEditTaskSubmit}
+                disabled={isSaving}
+              >
+                <div className='flex items-center justify-center'>
+                  {isSaving && (
+                    <Loader2 className='mr-3 h-4 w-4 animate-spin' />
+                  )}
+                  Save
+                </div>
+              </Button>
             </div>
           </div>
         </DialogFooter>
