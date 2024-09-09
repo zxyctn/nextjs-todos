@@ -204,7 +204,7 @@ const Home = () => {
 
   return (
     <div className='flex justify-center grow'>
-      {createPortal(
+      {document && createPortal(
         <div
           className={cn(
             'fixed h-full w-full flex items-center justify-center backdrop-blur-xl z-50',
