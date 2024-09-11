@@ -5,6 +5,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { GripVertical, Trash } from 'lucide-react';
 
 import EditTask from '@/components/edit-task';
+import Confirm from '@/components/confirm';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { TaskWithActivities } from '@/lib/prisma';
-import { deleteTask } from '@/store/workspaceSlice';
+import { deleteTask, setIsLoading } from '@/store/workspaceSlice';
 
 const Task = ({
   task,
@@ -45,16 +46,39 @@ const Task = ({
   };
 
   const handleTaskDelete = async () => {
+    dispatch(
+      setIsLoading({
+        value: true,
+        message: 'Deleting task...',
+        type: 'success',
+      })
+    );
+
     const res = await fetch(`/api/task/${task.id}`, {
       method: 'DELETE',
     });
 
     if (!res) {
-      console.error('Failed to delete task');
-      throw new Error('Failed to delete task');
+      console.error('Failed deleting task');
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Failed deleting task',
+          type: 'error',
+        })
+      );
+      throw new Error('Failed deleting task');
     }
 
     dispatch(deleteTask(task.id));
+
+    dispatch(
+      setIsLoading({
+        value: false,
+        message: 'Task deleted successfully',
+        type: 'success',
+      })
+    );
 
     setIsDialogOpen(false);
   };
@@ -79,8 +103,9 @@ const Task = ({
               className='cursor-pointer'
             >
               <CardTitle>{task.name}</CardTitle>
-              <CardDescription className='break-all'>
-                {task.description}
+              <CardDescription className='relative h-12 overflow-hidden'>
+                <p>{task.description}</p>
+                <div className='absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-secondary to-transparent' />
               </CardDescription>
             </CardHeader>
             <CardFooter className='p-0 justify-between'>
@@ -95,15 +120,15 @@ const Task = ({
                   })}
                 />
               </div>
-
-              <Button
-                size='icon'
-                variant='ghost'
-                className=''
-                onClick={handleTaskDelete}
+              <Confirm
+                onAction={handleTaskDelete}
+                title='Delete task'
+                description={`Are you sure you want to delete task ${task.name}?`}
               >
-                <Trash size={16} />
-              </Button>
+                <Button size='icon' variant='ghost'>
+                  <Trash size={16} />
+                </Button>
+              </Confirm>
             </CardFooter>
           </Card>
         )}

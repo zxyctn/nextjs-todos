@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { GripHorizontal, Loader2, Trash, Waves } from 'lucide-react';
+import { GripHorizontal, Trash, Waves } from 'lucide-react';
 import { Draggable, Droppable } from '@hello-pangea/dnd';
 
 import TitleEditor from '@/components/title-editor';
 import Task from '@/components/task';
 import AddTask from '@/components/add-task';
+import Confirm from '@/components/confirm';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import {
   updateGroupName,
   setIsDragDisabled,
   deleteGroup,
+  setIsLoading,
 } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,6 +46,14 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
     if (type === 'save') {
       const currentGroupName = currentGroup.name;
 
+      dispatch(
+        setIsLoading({
+          value: true,
+          message: 'Updating group name...',
+          type: 'success',
+        })
+      );
+
       dispatch(updateGroupName({ id: groupId, name: value }));
 
       dispatch(
@@ -60,10 +70,23 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
       });
 
       if (!res.ok) {
-        console.error('Failed to update group name');
+        console.error('Failed updating group name');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed updating group name',
+            type: 'error',
+          })
+        );
         dispatch(updateGroupName({ id: groupId, name: currentGroupName }));
-
-        return;
+      } else {
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Group name updated successfully',
+            type: 'success',
+          })
+        );
       }
 
       dispatch(
@@ -87,24 +110,38 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
       })
     );
 
+    dispatch(
+      setIsLoading({
+        value: true,
+        message: 'Deleting group...',
+        type: 'success',
+      })
+    );
+
     const res = await fetch(`/api/group/${groupId}`, {
       method: 'DELETE',
     });
 
     if (!res.ok) {
-      console.error('Failed to delete group');
+      console.error('Failed deleting group');
+
       dispatch(
-        setIsDragDisabled({
+        setIsLoading({
           value: false,
-          sourceDroppableId: '',
-          destinationDroppableId: '',
+          message: 'Failed deleting group',
+          type: 'error',
         })
       );
-
-      return;
+    } else {
+      dispatch(deleteGroup(groupId));
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Group deleted successfully',
+          type: 'success',
+        })
+      );
     }
-
-    dispatch(deleteGroup(groupId));
 
     dispatch(
       setIsDragDisabled({
@@ -138,13 +175,15 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
 
             {!isRenaming && (
               <div className='flex gap-1'>
-                <Button
-                  size='icon'
-                  variant='outline'
-                  onClick={handleGroupDelete}
+                <Confirm
+                  onAction={handleGroupDelete}
+                  title='Delete group'
+                  description={`Are you sure you want to delete group ${currentGroup.name}?`}
                 >
-                  <Trash size={16} />
-                </Button>
+                  <Button size='icon' variant='outline'>
+                    <Trash size={16} />
+                  </Button>
+                </Confirm>
                 <AddTask
                   groupId={currentGroup.id}
                   groupName={currentGroup.name}

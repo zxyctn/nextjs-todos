@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronUp, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
+import Confirm from '@/components/confirm';
 import { cn } from '@/lib/utils';
 import { LightSwitch } from '@/components/light-switch';
 import {
@@ -40,7 +41,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: true,
-        type: 'loading',
+        message: 'Loading workspace...',
+        type: 'success',
       })
     );
 
@@ -48,6 +50,13 @@ const Navbar = () => {
 
     if (!res) {
       console.error('Failed to select workspace');
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Failed loading workspace',
+          type: 'error',
+        })
+      );
       throw new Error('Failed to select workspace');
     }
 
@@ -60,7 +69,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: false,
-        type: 'loading',
+        message: 'Workspace loaded successfully',
+        type: 'success',
       })
     );
   };
@@ -73,7 +83,8 @@ const Navbar = () => {
       dispatch(
         setIsLoading({
           value: true,
-          type: 'saving',
+          message: 'Updating workspace...',
+          type: 'success',
         })
       );
 
@@ -90,7 +101,8 @@ const Navbar = () => {
         dispatch(
           setIsLoading({
             value: false,
-            type: 'failed',
+            message: 'Failed updating workspace',
+            type: 'error',
           })
         );
         return;
@@ -110,7 +122,8 @@ const Navbar = () => {
       dispatch(
         setIsLoading({
           value: false,
-          type: 'saving',
+          message: 'Workspace updated successfully',
+          type: 'success',
         })
       );
     }
@@ -122,7 +135,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: true,
-        type: 'saving',
+        message: 'Creating workspace...',
+        type: 'success',
       })
     );
 
@@ -138,7 +152,8 @@ const Navbar = () => {
       dispatch(
         setIsLoading({
           value: false,
-          type: 'failed',
+          message: 'Failed creating workspace',
+          type: 'error',
         })
       );
       return;
@@ -152,7 +167,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: false,
-        type: 'saving',
+        message: 'Workspace created successfully',
+        type: 'success',
       })
     );
   };
@@ -161,7 +177,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: true,
-        type: 'saving',
+        message: 'Creating group...',
+        type: 'success',
       })
     );
 
@@ -178,7 +195,8 @@ const Navbar = () => {
       dispatch(
         setIsLoading({
           value: false,
-          type: 'failed',
+          message: 'Failed creating group',
+          type: 'error',
         })
       );
       return;
@@ -198,7 +216,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: false,
-        type: 'saving',
+        message: 'Group created successfully',
+        type: 'success',
       })
     );
   };
@@ -207,7 +226,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: true,
-        type: 'saving',
+        message: 'Deleting workspace...',
+        type: 'success',
       })
     );
 
@@ -220,7 +240,8 @@ const Navbar = () => {
       dispatch(
         setIsLoading({
           value: false,
-          type: 'failed',
+          message: 'Failed deleting workspace',
+          type: 'error',
         })
       );
       return;
@@ -234,7 +255,8 @@ const Navbar = () => {
     dispatch(
       setIsLoading({
         value: false,
-        type: 'saving',
+        message: 'Workspace deleted successfully',
+        type: 'success',
       })
     );
   };
@@ -316,15 +338,17 @@ const Navbar = () => {
                             {workspace.name}
                           </Button>
 
-                          <Button
-                            size='icon'
-                            variant='ghost'
-                            onClick={async () =>
+                          <Confirm
+                            onAction={async () =>
                               await handleDeleteWorkspace(workspace.id)
                             }
+                            title='Delete workspace'
+                            description={`Are you sure you want to delete workspace ${workspace.name}?`}
                           >
-                            <Trash size={12} />
-                          </Button>
+                            <Button size='icon' variant='ghost'>
+                              <Trash size={12} />
+                            </Button>
+                          </Confirm>
                         </div>
                       ))}
                     </PopoverContent>

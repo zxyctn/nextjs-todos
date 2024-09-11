@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import moment from 'moment';
 import { Loader2 } from 'lucide-react';
 
+import Confirm from '@/components/confirm';
 import {
   Dialog,
   DialogContent,
@@ -59,7 +60,8 @@ const EditTask = ({
     dispatch(
       setIsLoading({
         value: true,
-        type: 'saving',
+        message: 'Updating task...',
+        type: 'success',
       })
     );
 
@@ -69,7 +71,14 @@ const EditTask = ({
     });
 
     if (!res.ok) {
-      console.error('Failed to update task');
+      console.error('Failed updating task');
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Failed updating task',
+          type: 'error',
+        })
+      );
       setIsSaving(false);
       return;
     }
@@ -85,13 +94,6 @@ const EditTask = ({
           activityContent: activity.content,
         })
       );
-
-      dispatch(
-        setIsLoading({
-          value: false,
-          type: 'failed',
-        })
-      );
     }
 
     handleDialogOpenChange(false);
@@ -99,7 +101,8 @@ const EditTask = ({
     dispatch(
       setIsLoading({
         value: false,
-        type: 'saving',
+        message: 'Task updated successfully',
+        type: 'success',
       })
     );
   };
@@ -154,8 +157,8 @@ const EditTask = ({
                       <div className='size-2 bg-primary/20 rounded-full'></div>
                     </div>
 
-                    <div className=''>
-                      <div key={activity.id} className='text-sm'>
+                    <div className='max-w-96'>
+                      <div key={activity.id} className='text-sm truncate'>
                         {activity.content}
                       </div>
                       <div className='text-xs text-muted-foreground'>
@@ -179,15 +182,20 @@ const EditTask = ({
         </div>
         <DialogFooter className='w-full pt-4'>
           <div className='flex justify-between w-full gap-2'>
-            <Button
-              type='button'
-              variant='destructive'
-              className=''
-              disabled={isSaving}
-              onClick={handleDelete}
+            <Confirm
+              onAction={handleDelete}
+              title='Delete task'
+              description={`Are you sure you want to delete task ${task.name}?`}
             >
-              Delete
-            </Button>
+              <Button
+                type='button'
+                variant='destructive'
+                className=''
+                disabled={isSaving}
+              >
+                Delete
+              </Button>
+            </Confirm>
             <div className='flex gap-2'>
               <DialogClose asChild>
                 <Button type='button' variant='ghost' disabled={isSaving}>

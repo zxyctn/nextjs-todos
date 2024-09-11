@@ -59,7 +59,8 @@ const AddTask = ({
     dispatch(
       setIsLoading({
         value: true,
-        type: 'saving',
+        message: 'Creating task...',
+        type: 'success',
       })
     );
 
@@ -94,11 +95,19 @@ const AddTask = ({
       dispatch(
         setIsLoading({
           value: false,
-          type: 'saving',
+          message: 'Task created successfully',
+          type: 'success',
         })
       );
     } else {
-      console.error('Failed to create task');
+      console.error('Failed creating task');
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Failed creating task',
+          type: 'error',
+        })
+      );
     }
 
     dispatch(
@@ -106,13 +115,6 @@ const AddTask = ({
         value: false,
         sourceDroppableId: '',
         destinationDroppableId: '',
-      })
-    );
-
-    dispatch(
-      setIsLoading({
-        value: false,
-        type: 'saving',
       })
     );
 
