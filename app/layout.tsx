@@ -36,7 +36,7 @@ export default async function RootLayout({
             <NavbarMobile />
           </div>
 
-          <Toaster richColors />
+          <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
     </html>
