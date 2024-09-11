@@ -5,7 +5,7 @@ import { Draggable } from '@hello-pangea/dnd';
 import { GripVertical, Trash } from 'lucide-react';
 
 import EditTask from '@/components/edit-task';
-import { useAppSelector } from '@/store/store';
+import { useAppDispatch, useAppSelector } from '@/store/store';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { TaskWithActivities } from '@/lib/prisma';
+import { deleteTask } from '@/store/workspaceSlice';
 
 const Task = ({
   task,
@@ -29,6 +30,8 @@ const Task = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
 
+  const dispatch = useAppDispatch();
+
   const isDragDisabled = useAppSelector(
     (state) => state.workspace.isDragDisabled.value
   );
@@ -39,6 +42,21 @@ const Task = ({
 
   const handleMouseEvent = (value: boolean) => {
     setMouseOver(value);
+  };
+
+  const handleTaskDelete = async () => {
+    const res = await fetch(`/api/task/${task.id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res) {
+      console.error('Failed to delete task');
+      throw new Error('Failed to delete task');
+    }
+
+    dispatch(deleteTask(task.id));
+
+    setIsDialogOpen(false);
   };
 
   return (
@@ -78,7 +96,12 @@ const Task = ({
                 />
               </div>
 
-              <Button size='icon' variant='ghost' className=''>
+              <Button
+                size='icon'
+                variant='ghost'
+                className=''
+                onClick={handleTaskDelete}
+              >
                 <Trash size={16} />
               </Button>
             </CardFooter>
@@ -90,6 +113,7 @@ const Task = ({
         groupName={groupName}
         open={isDialogOpen}
         handleDialogOpenChange={handleDialogOpenChange}
+        handleDelete={handleTaskDelete}
       />
     </>
   );
