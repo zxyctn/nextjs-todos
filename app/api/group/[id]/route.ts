@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { updateGroupTaskOrder, updateGroupName, deleteGroup } from '@/lib/db';
+import { moveGroup, updateGroupName, deleteGroup } from '@/lib/db';
 
 export async function PATCH(
   request: NextRequest,
@@ -9,16 +9,19 @@ export async function PATCH(
   const data = await request.json();
   let group;
 
-  if (Object.keys(data).includes('taskOrder')) {
-    group = await updateGroupTaskOrder(params.id, data.taskOrder);
-  } else if (Object.keys(data).includes('name')) {
+  if (Object.keys(data).includes('index')) {
+    group = await moveGroup(params.id, data.index);
+  } else {
     group = await updateGroupName(params.id, data.name);
   }
 
   return Response.json(group);
 }
 
-export async function DELETE({ params }: { params: { id: string } }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const { group, workspace } = await deleteGroup(params.id);
 
   return Response.json({ group, workspace });

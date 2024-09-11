@@ -6,7 +6,11 @@ export async function POST(request: NextRequest) {
   const data = await request.json();
   const { groupId, name, description } = data;
 
-  const { task, group } = await createTask(groupId, name, description);
+  const { task, group, activity } = await createTask(
+    groupId,
+    name,
+    description
+  );
 
-  return Response.json({ task, group });
+  return Response.json({ task, group, activity });
 }
