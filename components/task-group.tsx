@@ -153,7 +153,15 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
   };
 
   return (
-    <Draggable draggableId={`group-${groupId}`} index={index}>
+    <Draggable
+      draggableId={`group-${groupId}`}
+      index={index}
+      isDragDisabled={
+        isDragDisabled.sourceDroppableId === 'workspace' ||
+        isDragDisabled.destinationDroppableId === currentGroup.id ||
+        isDragDisabled.sourceDroppableId === currentGroup.id
+      }
+    >
       {(providedDraggable) => (
         <div
           className='flex flex-col gap-4 w-[300px] mx-16'
@@ -168,7 +176,8 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
                 handleEditingChange={handleNameEditing}
                 disabled={
                   isDragDisabled.sourceDroppableId === currentGroup.id ||
-                  isDragDisabled.destinationDroppableId === currentGroup.id
+                  isDragDisabled.destinationDroppableId === currentGroup.id ||
+                  isDragDisabled.sourceDroppableId === 'workspace'
                 }
               />
             </div>
@@ -192,7 +201,15 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
             )}
           </div>
 
-          <Droppable droppableId={`group-${groupId}`} type='task'>
+          <Droppable
+            droppableId={`group-${groupId}`}
+            type='task'
+            isDropDisabled={
+              isDragDisabled.sourceDroppableId === 'workspace' ||
+              isDragDisabled.destinationDroppableId === currentGroup.id ||
+              isDragDisabled.sourceDroppableId === currentGroup.id
+            }
+          >
             {(provided, snapshot) => (
               <Card
                 className={cn(
@@ -204,17 +221,6 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
                 onMouseEnter={() => handleMouseEvent(true)}
                 onMouseLeave={() => handleMouseEvent(false)}
               >
-                {(isDragDisabled.sourceDroppableId === currentGroup.id ||
-                  isDragDisabled.destinationDroppableId ===
-                    currentGroup.id) && (
-                  <div
-                    // className='z-30 w-full h-full absolute rounded-xl flex items-center justify-center backdrop-blur-sm'
-                    className='cursor-wait'
-                  >
-                    {/* <Loader2 className='animate-spin' /> */}
-                  </div>
-                )}
-
                 <div
                   className={cn(
                     'absolute -top-3 flex justify-center z-40 w-full transition-opacity',

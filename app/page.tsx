@@ -149,6 +149,14 @@ const Home = () => {
       const groupId = result.draggableId.split('-')[1];
 
       dispatch(
+        setIsDragDisabled({
+          value: true,
+          sourceDroppableId: 'workspace',
+          destinationDroppableId: 'workspace',
+        })
+      );
+
+      dispatch(
         moveGroup({
           id: groupId,
           index: destination.index,
@@ -189,6 +197,14 @@ const Home = () => {
           })
         );
 
+        dispatch(
+          setIsDragDisabled({
+            value: false,
+            sourceDroppableId: '',
+            destinationDroppableId: '',
+          })
+        );
+
         throw new Error('Failed moving group');
       }
 
@@ -197,6 +213,14 @@ const Home = () => {
           value: false,
           message: 'Moved group successfully',
           type: 'success',
+        })
+      );
+
+      dispatch(
+        setIsDragDisabled({
+          value: false,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
         })
       );
     }
