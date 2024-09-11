@@ -9,7 +9,11 @@ import Task from '@/components/task';
 import AddTask from '@/components/add-task';
 import { cn } from '@/lib/utils';
 import { useAppDispatch, useAppSelector } from '@/store/store';
-import { setGroupName, setIsDragDisabled } from '@/store/workspaceSlice';
+import {
+  updateGroupName,
+  setIsDragDisabled,
+  deleteGroup,
+} from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { TaskWithActivities } from '@/lib/prisma';
@@ -38,30 +42,77 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
     value: string = ''
   ) => {
     if (type === 'save') {
+      const currentGroupName = currentGroup.name;
+
+      dispatch(updateGroupName({ id: groupId, name: value }));
+
       dispatch(
         setIsDragDisabled({
           value: true,
-          sourceDroppableId: +groupId,
-          destinationDroppableId: -1,
+          sourceDroppableId: groupId,
+          destinationDroppableId: '',
         })
       );
 
-      await fetch(`/api/group/${groupId}`, {
+      const res = await fetch(`/api/group/${groupId}`, {
         method: 'PATCH',
         body: JSON.stringify({ name: value }),
       });
 
-      dispatch(setGroupName({ id: groupId, name: value }));
+      if (!res.ok) {
+        console.error('Failed to update group name');
+        dispatch(updateGroupName({ id: groupId, name: currentGroupName }));
+
+        return;
+      }
+
       dispatch(
         setIsDragDisabled({
           value: false,
-          sourceDroppableId: -1,
-          destinationDroppableId: -1,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
         })
       );
     }
 
     setIsRenaming(type === 'edit');
+  };
+
+  const handleGroupDelete = async () => {
+    dispatch(
+      setIsDragDisabled({
+        value: true,
+        sourceDroppableId: groupId,
+        destinationDroppableId: '',
+      })
+    );
+
+    const res = await fetch(`/api/group/${groupId}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      console.error('Failed to delete group');
+      dispatch(
+        setIsDragDisabled({
+          value: false,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
+        })
+      );
+
+      return;
+    }
+
+    dispatch(deleteGroup(groupId));
+
+    dispatch(
+      setIsDragDisabled({
+        value: false,
+        sourceDroppableId: '',
+        destinationDroppableId: '',
+      })
+    );
   };
 
   return (
@@ -79,15 +130,19 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
                 name={currentGroup.name}
                 handleEditingChange={handleNameEditing}
                 disabled={
-                  isDragDisabled.sourceDroppableId === +currentGroup.id ||
-                  isDragDisabled.destinationDroppableId === +currentGroup.id
+                  isDragDisabled.sourceDroppableId === currentGroup.id ||
+                  isDragDisabled.destinationDroppableId === currentGroup.id
                 }
               />
             </div>
 
             {!isRenaming && (
               <div className='flex gap-1'>
-                <Button size='icon' variant='outline'>
+                <Button
+                  size='icon'
+                  variant='outline'
+                  onClick={handleGroupDelete}
+                >
                   <Trash size={16} />
                 </Button>
                 <AddTask
@@ -110,11 +165,14 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
                 onMouseEnter={() => handleMouseEvent(true)}
                 onMouseLeave={() => handleMouseEvent(false)}
               >
-                {(isDragDisabled.sourceDroppableId === +currentGroup.id ||
+                {(isDragDisabled.sourceDroppableId === currentGroup.id ||
                   isDragDisabled.destinationDroppableId ===
-                    +currentGroup.id) && (
-                  <div className='z-30 w-full h-full absolute rounded-xl flex items-center justify-center backdrop-blur-sm'>
-                    <Loader2 className='animate-spin' />
+                    currentGroup.id) && (
+                  <div
+                    // className='z-30 w-full h-full absolute rounded-xl flex items-center justify-center backdrop-blur-sm'
+                    className='cursor-wait'
+                  >
+                    {/* <Loader2 className='animate-spin' /> */}
                   </div>
                 )}
 
