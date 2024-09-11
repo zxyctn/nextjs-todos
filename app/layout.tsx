@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 
 import Navbar from '@/components/navbar';
+import NavbarMobile from '@/components/navbar-mobile';
 import ThemeProvider from '@/components/theme-provider';
 import { Toaster } from '@/components/ui/sonner';
 
@@ -32,6 +33,7 @@ export default async function RootLayout({
               <div className='w-fit'>{children}</div>
             </div>
             <Navbar />
+            <NavbarMobile />
           </div>
 
           <Toaster richColors />

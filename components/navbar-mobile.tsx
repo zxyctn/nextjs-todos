@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ChevronUp, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronUp, LogOut, Menu, Plus, PlusIcon, Trash } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
 import Confirm from '@/components/confirm';
 import { cn } from '@/lib/utils';
 import { LightSwitch } from '@/components/light-switch';
+import { Separator } from '@/components/ui/separator';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -27,13 +28,16 @@ import {
 } from '@/store/workspaceSlice';
 import ReduxProvider from '@/store/redux-provider';
 
-const Navbar = () => {
+const NavbarMobile = () => {
   const [popOverOpen, setPopOverOpen] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const workspaceState = useAppSelector((state) => state.workspace);
   const currentWorkspace = useAppSelector((state) => state.workspace.current);
   const dispatch = useAppDispatch();
+
+  const navRef = useRef(null);
 
   const handleWorkspaceChange = async (id: string) => {
     if (currentWorkspace && id === currentWorkspace.id) return;
@@ -261,11 +265,47 @@ const Navbar = () => {
     );
   };
 
+  const handleClickOutside = (e: MouseEvent) => {
+    if (navRef.current) {
+      const current = navRef.current as HTMLElement;
+      const rect = current.getBoundingClientRect();
+      const { clientX: x, clientY: y } = e;
+      // Check if the click is outside the navbar boundaries
+      if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+        setIsMenuOpen(false); // Collapse navbar
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
   return (
-    <NavigationMenu className='fixed bottom-0 w-full sm:flex hidden justify-center'>
-      <div className='grow max-w-[1400px]'>
-        <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
-          <NavigationMenuItem className='sm:gap-2 items-center hidden sm:flex'>
+    <NavigationMenu
+      ref={navRef}
+      className='fixed bottom-0 w-full flex flex-col sm:hidden justify-center transition-all p-2 m-2'
+    >
+      <div
+        className={cn(
+          'border border-input rounded-lg w-full grow p-2 flex flex-col',
+          { 'gap-2': isMenuOpen }
+        )}
+      >
+        <NavigationMenuList
+          className={cn('sm:gap-2 items-center justify-between', {
+            hidden: !isMenuOpen,
+          })}
+        >
+          <NavigationMenuItem className='sm:gap-2 items-center sm:hidden flex'>
             <Button
               className='gap-2'
               variant='secondary'
@@ -275,6 +315,34 @@ const Navbar = () => {
             </Button>
           </NavigationMenuItem>
 
+          <NavigationMenuList className='gap-1 items-center'>
+            <NavigationMenuItem>
+              <LightSwitch />
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Button size='icon'>
+                <LogOut size={16} />
+              </Button>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenuList>
+        <Separator
+          className={cn('my-2', {
+            hidden: !isMenuOpen,
+          })}
+        />
+        <NavigationMenuList className='gap-2 justify-between items-center'>
+          <NavigationMenuItem>
+            <Button
+              size='icon'
+              variant='ghost'
+              onClick={() => {
+                setIsMenuOpen(!isMenuOpen);
+              }}
+            >
+              <Menu size={16} />
+            </Button>
+          </NavigationMenuItem>
           {currentWorkspace && (
             <NavigationMenuItem className='flex items-center gap-4 grow sm:grow-0'>
               <TitleEditor
@@ -353,17 +421,6 @@ const Navbar = () => {
               )}
             </NavigationMenuItem>
           )}
-
-          <NavigationMenuList className='sm:gap-2 items-center hidden sm:flex'>
-            <NavigationMenuItem>
-              <LightSwitch />
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Button size='icon'>
-                <LogOut size={16} />
-              </Button>
-            </NavigationMenuItem>
-          </NavigationMenuList>
         </NavigationMenuList>
       </div>
     </NavigationMenu>
@@ -373,7 +430,7 @@ const Navbar = () => {
 const NavbarWrapper = () => {
   return (
     <ReduxProvider>
-      <Navbar />
+      <NavbarMobile />
     </ReduxProvider>
   );
 };
