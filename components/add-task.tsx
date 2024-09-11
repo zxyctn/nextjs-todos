@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useAppDispatch } from '@/store/store';
+import { createTask, setIsDragDisabled } from '@/store/workspaceSlice';
 
 const AddTask = ({
   groupId,
@@ -23,8 +25,11 @@ const AddTask = ({
   groupId: string;
   groupName: string;
 }) => {
+  const [open, setOpen] = useState(false);
   const [name, setName] = useState('Untitled');
   const [description, setDescription] = useState('');
+
+  const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
@@ -36,10 +41,73 @@ const AddTask = ({
     setDescription(e.target.value);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    dispatch(
+      setIsDragDisabled({
+        value: true,
+        sourceDroppableId: groupId,
+        destinationDroppableId: groupId,
+      })
+    );
+
+    const res = await fetch('/api/task', {
+      method: 'POST',
+      body: JSON.stringify({
+        groupId,
+        name,
+        description,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (res.ok) {
+      const { task, activity } = await res.json();
+      setName(task.name);
+      setDescription(task.description);
+
+      dispatch(
+        createTask({
+          id: task.id,
+          groupId,
+          name,
+          description,
+          activityId: activity.id,
+          activityContent: activity.content,
+        })
+      );
+    } else {
+      console.error('Failed to create task');
+    }
+
+    dispatch(
+      setIsDragDisabled({
+        value: false,
+        sourceDroppableId: '',
+        destinationDroppableId: '',
+      })
+    );
+
+    setOpen(false);
+  };
+
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+  };
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogTrigger>
-        <Button size='icon' variant='secondary'>
+        <Button
+          size='icon'
+          variant='secondary'
+          onClick={() => {
+            open ? null : setOpen(true);
+          }}
+        >
           <Plus size={16} />
         </Button>
       </DialogTrigger>
@@ -82,7 +150,9 @@ const AddTask = ({
               Cancel
             </Button>
           </DialogClose>
-          <Button type='submit'>Save</Button>
+          <Button type='submit' onClick={handleSubmit}>
+            Save
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
