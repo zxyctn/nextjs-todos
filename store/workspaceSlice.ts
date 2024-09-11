@@ -25,7 +25,10 @@ const initialState: {
     sourceDroppableId: string;
     destinationDroppableId: string;
   };
-  isLoading: boolean;
+  isLoading: {
+    value: boolean;
+    type: 'loading' | 'saving' | 'failed';
+  };
 } = {
   current: {
     id: '',
@@ -42,7 +45,10 @@ const initialState: {
     sourceDroppableId: '',
     destinationDroppableId: '',
   },
-  isLoading: false,
+  isLoading: {
+    value: false,
+    type: 'loading',
+  },
 };
 
 export const workspaceSlice = createSlice({
@@ -505,7 +511,13 @@ export const workspaceSlice = createSlice({
       state.isDragDisabled = action.payload;
     },
 
-    setIsLoading: (state, action: PayloadAction<boolean>) => {
+    setIsLoading: (
+      state,
+      action: PayloadAction<{
+        value: boolean;
+        type: 'loading' | 'saving' | 'failed';
+      }>
+    ) => {
       state.isLoading = action.payload;
     },
   },

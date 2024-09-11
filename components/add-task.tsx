@@ -16,7 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch } from '@/store/store';
-import { createTask, setIsDragDisabled } from '@/store/workspaceSlice';
+import {
+  createTask,
+  setIsDragDisabled,
+  setIsLoading,
+} from '@/store/workspaceSlice';
 
 const AddTask = ({
   groupId,
@@ -52,6 +56,13 @@ const AddTask = ({
       })
     );
 
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'saving',
+      })
+    );
+
     const res = await fetch('/api/task', {
       method: 'POST',
       body: JSON.stringify({
@@ -79,6 +90,13 @@ const AddTask = ({
           activityContent: activity.content,
         })
       );
+
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'saving',
+        })
+      );
     } else {
       console.error('Failed to create task');
     }
@@ -88,6 +106,13 @@ const AddTask = ({
         value: false,
         sourceDroppableId: '',
         destinationDroppableId: '',
+      })
+    );
+
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'saving',
       })
     );
 

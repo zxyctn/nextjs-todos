@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useAppDispatch } from '@/store/store';
-import { updateTaskContent } from '@/store/workspaceSlice';
+import { setIsLoading, updateTaskContent } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ const EditTask = ({
   groupName,
   open,
   handleDialogOpenChange,
-  handleDelete
+  handleDelete,
 }: {
   task: TaskWithActivities;
   groupName: string;
@@ -56,6 +56,12 @@ const EditTask = ({
     e.preventDefault();
 
     setIsSaving(true);
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'saving',
+      })
+    );
 
     const res = await fetch(`/api/task/${task.id}`, {
       method: 'PATCH',
@@ -79,10 +85,23 @@ const EditTask = ({
           activityContent: activity.content,
         })
       );
+
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'failed',
+        })
+      );
     }
 
     handleDialogOpenChange(false);
     setIsSaving(false);
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'saving',
+      })
+    );
   };
 
   return (

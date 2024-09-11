@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { Waves } from 'lucide-react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -20,8 +21,15 @@ import {
 } from '@/store/workspaceSlice';
 
 const Home = () => {
+  const [loadingText, setLoadingText] = useState('Loading...');
+
   const workspaceState = useAppSelector((state) => state.workspace);
   const dispatch = useAppDispatch();
+
+  const isLoading = useAppSelector((state) => state.workspace.isLoading);
+  const isDragDisabled = useAppSelector(
+    (state) => state.workspace.isDragDisabled.value
+  );
 
   const fetchWorkspaces = async () => {
     const res = await fetch('/api/workspace');
@@ -62,6 +70,13 @@ const Home = () => {
       );
 
       dispatch(
+        setIsLoading({
+          value: true,
+          type: 'saving',
+        })
+      );
+
+      dispatch(
         moveTask({
           sourceGroupId: sInd,
           destinationGroupId: dInd,
@@ -93,9 +108,14 @@ const Home = () => {
           })
         );
 
-        throw new Error('Failed to move task');
+        dispatch(
+          setIsLoading({
+            value: false,
+            type: 'failed',
+          })
+        );
 
-        // TODO: Show a toast
+        throw new Error('Failed to move task');
       }
 
       const { task, activity } = await res.json();
@@ -117,6 +137,13 @@ const Home = () => {
           destinationDroppableId: '',
         })
       );
+
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'saving',
+        })
+      );
     } else {
       const groupId = result.draggableId.split('-')[1];
 
@@ -127,9 +154,14 @@ const Home = () => {
         })
       );
 
-      dispatch(setIsLoading(true));
+      dispatch(
+        setIsLoading({
+          value: true,
+          type: 'saving',
+        })
+      );
 
-      await fetch(`/api/group/${groupId}`, {
+      const res = await fetch(`/api/group/${groupId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -139,15 +171,76 @@ const Home = () => {
         }),
       });
 
-      dispatch(setIsLoading(false));
+      if (!res.ok) {
+        dispatch(
+          moveGroup({
+            id: groupId,
+            index: source.index,
+          })
+        );
+
+        dispatch(
+          setIsLoading({
+            value: false,
+            type: 'failed',
+          })
+        );
+
+        throw new Error('Failed to move group');
+      }
+
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'saving',
+        })
+      );
     }
   };
 
   useEffect(() => {
+    if (isLoading.value) {
+      const loadingText =
+        isLoading.type === 'loading' ? 'Loading...' : 'Saving changes...';
+
+      setLoadingText(loadingText);
+
+      toast.loading(loadingText, {
+        id: 'loading',
+      });
+    } else {
+      let loadedText = '';
+
+      if (isLoading.type === 'loading') {
+        loadedText = 'Loaded successfully';
+      } else if (isLoading.type === 'saving') {
+        loadedText = 'Saved successfully';
+      } else {
+        loadedText = 'Failed loading';
+      }
+
+      toast.success(loadedText, {
+        id: 'loading',
+        duration: loadedText !== 'Failed loading' ? 2000 : 500,
+      });
+    }
+  }, [isLoading, isDragDisabled]);
+
+  useEffect(() => {
     const init = async () => {
-      dispatch(setIsLoading(true));
+      dispatch(
+        setIsLoading({
+          value: true,
+          type: 'loading',
+        })
+      );
       await fetchWorkspaces();
-      dispatch(setIsLoading(false));
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'loading',
+        })
+      );
     };
 
     init();

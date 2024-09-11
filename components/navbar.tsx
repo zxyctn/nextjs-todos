@@ -1,14 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import {
-  ChevronUp,
-  Loader2,
-  LogOut,
-  Plus,
-  PlusIcon,
-  Trash,
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronUp, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
 import { cn } from '@/lib/utils';
@@ -44,7 +37,12 @@ const Navbar = () => {
   const handleWorkspaceChange = async (id: string) => {
     if (currentWorkspace && id === currentWorkspace.id) return;
 
-    dispatch(setIsLoading(true));
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'loading',
+      })
+    );
 
     const res = await fetch(`/api/workspace/${id}`);
 
@@ -59,7 +57,12 @@ const Navbar = () => {
     dispatch(setCurrentWorkspace(selected));
     setPopOverOpen(false);
 
-    dispatch(setIsLoading(false));
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'loading',
+      })
+    );
   };
 
   const handleWorkspaceEditing = async (
@@ -67,7 +70,12 @@ const Navbar = () => {
     value: string = ''
   ) => {
     if (type === 'save') {
-      dispatch(setIsLoading(true));
+      dispatch(
+        setIsLoading({
+          value: true,
+          type: 'saving',
+        })
+      );
 
       const res = await fetch(`/api/workspace/${currentWorkspace.id}`, {
         method: 'PATCH',
@@ -79,7 +87,12 @@ const Navbar = () => {
 
       if (!res.ok) {
         console.error('Failed to update workspace name');
-        dispatch(setIsLoading(false));
+        dispatch(
+          setIsLoading({
+            value: false,
+            type: 'failed',
+          })
+        );
         return;
       }
 
@@ -94,14 +107,24 @@ const Navbar = () => {
       );
       dispatch(setCurrentWorkspace(updatedWorkspace));
 
-      dispatch(setIsLoading(false));
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'saving',
+        })
+      );
     }
 
     setIsRenaming(type === 'edit');
   };
 
   const handleWorkspaceCreate = async () => {
-    dispatch(setIsLoading(true));
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'saving',
+      })
+    );
 
     const res = await fetch(`/api/workspace`, {
       method: 'POST',
@@ -112,7 +135,12 @@ const Navbar = () => {
 
     if (!res) {
       console.error('Failed to create workspace');
-      dispatch(setIsLoading(false));
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'failed',
+        })
+      );
       return;
     }
 
@@ -121,11 +149,21 @@ const Navbar = () => {
     dispatch(setWorkspaces(workspaces));
     dispatch(setCurrentWorkspace(selected));
 
-    dispatch(setIsLoading(false));
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'saving',
+      })
+    );
   };
 
   const handleGroupCreate = async () => {
-    dispatch(setIsLoading(true));
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'saving',
+      })
+    );
 
     const res = await fetch(`/api/group`, {
       method: 'POST',
@@ -137,7 +175,12 @@ const Navbar = () => {
 
     if (!res.ok) {
       console.error('Failed to create group');
-      dispatch(setIsLoading(false));
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'failed',
+        })
+      );
       return;
     }
 
@@ -152,11 +195,21 @@ const Navbar = () => {
 
     dispatch(setCurrentWorkspace(workspace));
 
-    dispatch(setIsLoading(false));
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'saving',
+      })
+    );
   };
 
   const handleDeleteWorkspace = async (id: string) => {
-    dispatch(setIsLoading(true));
+    dispatch(
+      setIsLoading({
+        value: true,
+        type: 'saving',
+      })
+    );
 
     const res = await fetch(`/api/workspace/${id}`, {
       method: 'DELETE',
@@ -164,7 +217,12 @@ const Navbar = () => {
 
     if (!res.ok) {
       console.error('Failed to delete workspace', res);
-      dispatch(setIsLoading(false));
+      dispatch(
+        setIsLoading({
+          value: false,
+          type: 'failed',
+        })
+      );
       return;
     }
 
@@ -173,7 +231,12 @@ const Navbar = () => {
     dispatch(setWorkspaces(workspaces));
     dispatch(setCurrentWorkspace(selected));
 
-    dispatch(setIsLoading(false));
+    dispatch(
+      setIsLoading({
+        value: false,
+        type: 'saving',
+      })
+    );
   };
 
   return (
@@ -193,11 +256,12 @@ const Navbar = () => {
           </div>
 
           <NavigationMenuItem>
-            {currentWorkspace && !workspaceState.isLoading && (
+            {currentWorkspace && (
               <div className='flex items-center gap-4'>
                 <TitleEditor
                   name={currentWorkspace.name}
                   handleEditingChange={handleWorkspaceEditing}
+                  disabled={workspaceState.isLoading.value}
                 />
                 {!isRenaming && (
                   <Popover
@@ -209,6 +273,7 @@ const Navbar = () => {
                         size='icon'
                         variant='ghost'
                         className='rounded-full'
+                        disabled={workspaceState.isLoading.value}
                       >
                         <ChevronUp
                           className={`transition-transform ${
@@ -267,7 +332,6 @@ const Navbar = () => {
                 )}
               </div>
             )}
-            {workspaceState.isLoading && <Loader2 className='animate-spin' />}
           </NavigationMenuItem>
 
           <div className='flex gap-2 items-center'>
