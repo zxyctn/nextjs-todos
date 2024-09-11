@@ -181,7 +181,7 @@ const EditTask = ({
           </div>
         </div>
         <DialogFooter className='w-full pt-4'>
-          <div className='flex justify-between w-full gap-2'>
+          <div className='flex justify-between w-full gap-2 flex-col-reverse sm:flex-row'>
             <Confirm
               onAction={handleDelete}
               title='Delete task'
@@ -196,7 +196,7 @@ const EditTask = ({
                 Delete
               </Button>
             </Confirm>
-            <div className='flex gap-2'>
+            <div className='flex gap-2 flex-col-reverse sm:flex-row'>
               <DialogClose asChild>
                 <Button type='button' variant='ghost' disabled={isSaving}>
                   Cancel
