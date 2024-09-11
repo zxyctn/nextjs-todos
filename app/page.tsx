@@ -1,37 +1,44 @@
 'use client';
 
 import { useEffect } from 'react';
-import { DragDropContext, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { Waves } from 'lucide-react';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
 
 import ReduxProvider from '@/store/redux-provider';
 import TaskGroup from '@/components/task-group';
 import { useAppSelector, useAppDispatch } from '@/store/store';
 import {
   GroupWithOrderedTasks,
+  moveGroup,
+  moveTask,
   setCurrentWorkspace,
   setIsDragDisabled,
   setIsLoading,
-  setOrderedTasks,
   setWorkspaces,
+  updateTaskContent,
 } from '@/store/workspaceSlice';
-import type { Group } from '@prisma/client';
-import type { WorkspaceWithGroups } from '@/lib/prisma';
 
 const Home = () => {
   const workspaceState = useAppSelector((state) => state.workspace);
   const dispatch = useAppDispatch();
 
   const fetchWorkspaces = async () => {
-    const workspaces: WorkspaceWithGroups[] = await fetch(
-      '/api/workspace'
-    ).then((res) => res.json());
+    const res = await fetch('/api/workspace');
+
+    if (!res) {
+      console.error('Failed to fetch workspaces');
+      throw new Error('Failed to fetch workspaces');
+    }
+
+    const { workspaces, selected } = await res.json();
 
     if (!workspaces.length) {
       return;
     }
 
     dispatch(setWorkspaces(workspaces));
+    dispatch(setCurrentWorkspace(selected));
   };
 
   const handleDragEnd = async (result: DropResult) => {
@@ -44,6 +51,7 @@ const Home = () => {
     if (type === 'task') {
       const sInd = source.droppableId.split('-')[1];
       const dInd = destination.droppableId.split('-')[1];
+      const taskId = result.draggableId.split('-')[1];
 
       dispatch(
         setIsDragDisabled({
@@ -53,100 +61,54 @@ const Home = () => {
         })
       );
 
-      const sourceGroup = workspaceState.current.groups.find(
-        (group: Group) => group.id === sInd
+      dispatch(
+        moveTask({
+          sourceGroupId: sInd,
+          destinationGroupId: dInd,
+          taskId,
+          sourceIndex: source.index,
+          destinationIndex: destination.index,
+        })
       );
 
-      const destinationGroup = workspaceState.current.groups.find(
-        (group: Group) => group.id === dInd
+      const res = await fetch(`/api/task/${taskId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          groupId: dInd,
+          index: destination.index,
+        }),
+      });
+
+      if (!res.ok) {
+        dispatch(
+          moveTask({
+            sourceGroupId: dInd,
+            destinationGroupId: sInd,
+            taskId,
+            sourceIndex: destination.index,
+            destinationIndex: source.index,
+          })
+        );
+
+        throw new Error('Failed to move task');
+
+        // TODO: Show a toast
+      }
+
+      const { task, activity } = await res.json();
+
+      dispatch(
+        updateTaskContent({
+          taskId: task.id,
+          name: task.name,
+          description: task.description,
+          activityId: activity.id,
+          activityContent: activity.content,
+        })
       );
-
-      if (!sourceGroup || !destinationGroup) {
-        throw new Error('Group not found');
-      }
-
-      if (sInd === dInd) {
-        const newTaskOrder = Array.from(sourceGroup.taskOrder);
-        newTaskOrder.splice(source.index, 1);
-        newTaskOrder.splice(
-          destination.index,
-          0,
-          result.draggableId.split('-')[1]
-        );
-
-        dispatch(
-          setOrderedTasks({
-            id: sourceGroup.id,
-            taskOrder: newTaskOrder,
-          })
-        );
-
-        await fetch(`/api/group/${sInd}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            taskOrder: newTaskOrder,
-          }),
-        });
-
-        await fetchWorkspaces();
-      } else {
-        const taskId = result.draggableId.split('-')[1];
-
-        const newSourceTaskOrder = Array.from(sourceGroup.taskOrder);
-        newSourceTaskOrder.splice(source.index, 1);
-
-        const newDestinationTaskOrder = Array.from(destinationGroup.taskOrder);
-        newDestinationTaskOrder.splice(destination.index, 0, taskId);
-
-        await fetch(`/api/task/${taskId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            groupId: `${dInd}`,
-          }),
-        });
-
-        await fetch(`/api/group/${sInd}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            taskOrder: newSourceTaskOrder,
-          }),
-        });
-
-        await fetch(`/api/group/${dInd}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            taskOrder: newDestinationTaskOrder,
-          }),
-        });
-
-        await fetchWorkspaces();
-
-        dispatch(
-          setOrderedTasks({
-            id: sourceGroup.id,
-            taskOrder: newSourceTaskOrder,
-          })
-        );
-
-        dispatch(
-          setOrderedTasks({
-            id: destinationGroup.id,
-            taskOrder: newDestinationTaskOrder,
-          })
-        );
-      }
 
       dispatch(
         setIsDragDisabled({
@@ -156,34 +118,26 @@ const Home = () => {
         })
       );
     } else {
-      const newGroupOrder = Array.from(workspaceState.current.groupOrder);
-      newGroupOrder.splice(source.index, 1);
-      newGroupOrder.splice(
-        destination.index,
-        0,
-        result.draggableId.split('-')[1]
+      const groupId = result.draggableId.split('-')[1];
+
+      dispatch(
+        moveGroup({
+          id: groupId,
+          index: destination.index,
+        })
       );
 
       dispatch(setIsLoading(true));
 
-      dispatch(
-        setCurrentWorkspace({
-          ...workspaceState.current,
-          groupOrder: newGroupOrder,
-        })
-      );
-
-      await fetch(`/api/workspace/${workspaceState.current.id}`, {
+      await fetch(`/api/group/${groupId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          groupOrder: newGroupOrder,
+          index: destination.index,
         }),
       });
-
-      await fetchWorkspaces();
 
       dispatch(setIsLoading(false));
     }

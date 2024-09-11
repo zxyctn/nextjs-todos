@@ -12,7 +12,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useAppDispatch } from '@/store/store';
-import { setTaskContent } from '@/store/workspaceSlice';
+import { updateTaskContent } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -26,11 +26,13 @@ const EditTask = ({
   groupName,
   open,
   handleDialogOpenChange,
+  handleDelete
 }: {
   task: TaskWithActivities;
   groupName: string;
   open: boolean;
   handleDialogOpenChange: any;
+  handleDelete: any;
 }) => {
   const [name, setName] = useState(task.name);
   const [description, setDescription] = useState(task.description || '');
@@ -55,15 +57,31 @@ const EditTask = ({
 
     setIsSaving(true);
 
-    const updatedTask = await fetch(`/api/task/${task.id}`, {
+    const res = await fetch(`/api/task/${task.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ name, description }),
     });
-    const { activities } = await updatedTask.json();
-    dispatch(setTaskContent({ id: task.id, name, description, activities }));
+
+    if (!res.ok) {
+      console.error('Failed to update task');
+      setIsSaving(false);
+      return;
+    }
+
+    const { activity } = await res.json();
+    if (activity) {
+      dispatch(
+        updateTaskContent({
+          taskId: task.id,
+          name,
+          description,
+          activityId: activity.id,
+          activityContent: activity.content,
+        })
+      );
+    }
 
     handleDialogOpenChange(false);
-
     setIsSaving(false);
   };
 
@@ -147,6 +165,7 @@ const EditTask = ({
               variant='destructive'
               className=''
               disabled={isSaving}
+              onClick={handleDelete}
             >
               Delete
             </Button>

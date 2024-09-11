@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ChevronUp, Loader2, LogOut, Plus, PlusIcon } from 'lucide-react';
+import {
+  ChevronUp,
+  Loader2,
+  LogOut,
+  Plus,
+  PlusIcon,
+  Trash,
+} from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
 import { cn } from '@/lib/utils';
@@ -19,6 +26,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import {
+  createGroup,
   setCurrentWorkspace,
   setIsLoading,
   setWorkspaces,
@@ -38,16 +46,17 @@ const Navbar = () => {
 
     dispatch(setIsLoading(true));
 
-    const updatedWorkspace = await fetch(`/api/workspace/${id}`).then((res) =>
-      res.json()
-    );
+    const res = await fetch(`/api/workspace/${id}`);
 
-    if (!updatedWorkspace) {
+    if (!res) {
       console.error('Failed to select workspace');
       throw new Error('Failed to select workspace');
     }
 
-    dispatch(setCurrentWorkspace(updatedWorkspace));
+    const { workspaces, selected } = await res.json();
+
+    dispatch(setWorkspaces(workspaces));
+    dispatch(setCurrentWorkspace(selected));
     setPopOverOpen(false);
 
     dispatch(setIsLoading(false));
@@ -60,13 +69,21 @@ const Navbar = () => {
     if (type === 'save') {
       dispatch(setIsLoading(true));
 
-      const updatedWorkspace = await fetch(`/api/workspace`, {
-        method: 'PUT',
+      const res = await fetch(`/api/workspace/${currentWorkspace.id}`, {
+        method: 'PATCH',
         body: JSON.stringify({
           id: currentWorkspace?.id || '',
           name: value,
         }),
-      }).then((res) => res.json());
+      });
+
+      if (!res.ok) {
+        console.error('Failed to update workspace name');
+        dispatch(setIsLoading(false));
+        return;
+      }
+
+      const updatedWorkspace = await res.json();
 
       dispatch(
         setWorkspaces(
@@ -75,6 +92,7 @@ const Navbar = () => {
           )
         )
       );
+      dispatch(setCurrentWorkspace(updatedWorkspace));
 
       dispatch(setIsLoading(false));
     }
@@ -85,15 +103,75 @@ const Navbar = () => {
   const handleWorkspaceCreate = async () => {
     dispatch(setIsLoading(true));
 
-    await fetch(`/api/workspace`, {
+    const res = await fetch(`/api/workspace`, {
       method: 'POST',
       body: JSON.stringify({
         name: 'New workspace',
       }),
-    }).then((res) => res.json());
+    });
 
-    const workspaces = await fetch(`/api/workspace`).then((res) => res.json());
+    if (!res) {
+      console.error('Failed to create workspace');
+      dispatch(setIsLoading(false));
+      return;
+    }
+
+    const { workspaces, selected } = await res.json();
+
     dispatch(setWorkspaces(workspaces));
+    dispatch(setCurrentWorkspace(selected));
+
+    dispatch(setIsLoading(false));
+  };
+
+  const handleGroupCreate = async () => {
+    dispatch(setIsLoading(true));
+
+    const res = await fetch(`/api/group`, {
+      method: 'POST',
+      body: JSON.stringify({
+        workspaceId: currentWorkspace?.id,
+        name: 'New group',
+      }),
+    });
+
+    if (!res.ok) {
+      console.error('Failed to create group');
+      dispatch(setIsLoading(false));
+      return;
+    }
+
+    const { group, workspace } = await res.json();
+
+    dispatch(
+      createGroup({
+        id: group.id,
+        name: group.name,
+      })
+    );
+
+    dispatch(setCurrentWorkspace(workspace));
+
+    dispatch(setIsLoading(false));
+  };
+
+  const handleDeleteWorkspace = async (id: string) => {
+    dispatch(setIsLoading(true));
+
+    const res = await fetch(`/api/workspace/${id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      console.error('Failed to delete workspace', res);
+      dispatch(setIsLoading(false));
+      return;
+    }
+
+    const { workspaces, selected } = await res.json();
+
+    dispatch(setWorkspaces(workspaces));
+    dispatch(setCurrentWorkspace(selected));
 
     dispatch(setIsLoading(false));
   };
@@ -104,7 +182,11 @@ const Navbar = () => {
         <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
           <div className='flex gap-2 items-center'>
             <NavigationMenuItem>
-              <Button className='gap-2' variant='secondary'>
+              <Button
+                className='gap-2'
+                variant='secondary'
+                onClick={handleGroupCreate}
+              >
                 <Plus size={16} /> Add group
               </Button>
             </NavigationMenuItem>
@@ -145,25 +227,40 @@ const Navbar = () => {
                         </div>
                       </Button>
                       {workspaceState.workspaces.map((workspace) => (
-                        <Button
-                          className={cn('w-full justify-start', {
-                            'cursor-default':
-                              workspace.id === currentWorkspace.id,
-                          })}
+                        <div
+                          className='flex gap-1 items-center justify-between'
                           key={workspace.id}
-                          onClick={() =>
-                            workspace.id !== currentWorkspace?.id
-                              ? handleWorkspaceChange(workspace.id)
-                              : null
-                          }
-                          variant={
-                            workspace.id === currentWorkspace.id
-                              ? 'secondary'
-                              : 'ghost'
-                          }
                         >
-                          {workspace.name}
-                        </Button>
+                          <Button
+                            className={cn('w-full justify-start', {
+                              'cursor-default':
+                                workspace.id === currentWorkspace.id,
+                            })}
+                            key={workspace.id}
+                            onClick={() =>
+                              workspace.id !== currentWorkspace?.id
+                                ? handleWorkspaceChange(workspace.id)
+                                : null
+                            }
+                            variant={
+                              workspace.id === currentWorkspace.id
+                                ? 'secondary'
+                                : 'ghost'
+                            }
+                          >
+                            {workspace.name}
+                          </Button>
+
+                          <Button
+                            size='icon'
+                            variant='ghost'
+                            onClick={async () =>
+                              await handleDeleteWorkspace(workspace.id)
+                            }
+                          >
+                            <Trash size={12} />
+                          </Button>
+                        </div>
                       ))}
                     </PopoverContent>
                   </Popover>
