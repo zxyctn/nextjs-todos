@@ -42,8 +42,8 @@ const Home = () => {
       return;
     }
     if (type === 'task') {
-      const sInd = +source.droppableId.split('-')[1];
-      const dInd = +destination.droppableId.split('-')[1];
+      const sInd = source.droppableId.split('-')[1];
+      const dInd = destination.droppableId.split('-')[1];
 
       dispatch(
         setIsDragDisabled({
@@ -54,11 +54,11 @@ const Home = () => {
       );
 
       const sourceGroup = workspaceState.current.groups.find(
-        (group: Group) => +group.id === sInd
+        (group: Group) => group.id === sInd
       );
 
       const destinationGroup = workspaceState.current.groups.find(
-        (group: Group) => +group.id === dInd
+        (group: Group) => group.id === dInd
       );
 
       if (!sourceGroup || !destinationGroup) {
@@ -71,13 +71,13 @@ const Home = () => {
         newTaskOrder.splice(
           destination.index,
           0,
-          +result.draggableId.split('-')[1]
+          result.draggableId.split('-')[1]
         );
 
         dispatch(
           setOrderedTasks({
             id: sourceGroup.id,
-            taskOrder: newTaskOrder as number[],
+            taskOrder: newTaskOrder,
           })
         );
 
@@ -93,7 +93,7 @@ const Home = () => {
 
         await fetchWorkspaces();
       } else {
-        const taskId = +result.draggableId.split('-')[1];
+        const taskId = result.draggableId.split('-')[1];
 
         const newSourceTaskOrder = Array.from(sourceGroup.taskOrder);
         newSourceTaskOrder.splice(source.index, 1);
@@ -136,14 +136,14 @@ const Home = () => {
         dispatch(
           setOrderedTasks({
             id: sourceGroup.id,
-            taskOrder: newSourceTaskOrder as number[],
+            taskOrder: newSourceTaskOrder,
           })
         );
 
         dispatch(
           setOrderedTasks({
             id: destinationGroup.id,
-            taskOrder: newDestinationTaskOrder as number[],
+            taskOrder: newDestinationTaskOrder,
           })
         );
       }
@@ -151,8 +151,8 @@ const Home = () => {
       dispatch(
         setIsDragDisabled({
           value: false,
-          sourceDroppableId: -1,
-          destinationDroppableId: -1,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
         })
       );
     } else {
@@ -161,7 +161,7 @@ const Home = () => {
       newGroupOrder.splice(
         destination.index,
         0,
-        +result.draggableId.split('-')[1]
+        result.draggableId.split('-')[1]
       );
 
       dispatch(setIsLoading(true));
@@ -169,7 +169,7 @@ const Home = () => {
       dispatch(
         setCurrentWorkspace({
           ...workspaceState.current,
-          groupOrder: newGroupOrder as number[],
+          groupOrder: newGroupOrder,
         })
       );
 
