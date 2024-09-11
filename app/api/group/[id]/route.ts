@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 
-import { updateGroupTaskOrder, updateGroupName } from '@/lib/db';
+import { updateGroupTaskOrder, updateGroupName, deleteGroup } from '@/lib/db';
 
 export async function PATCH(
   request: NextRequest,
@@ -16,4 +16,10 @@ export async function PATCH(
   }
 
   return Response.json(group);
+}
+
+export async function DELETE({ params }: { params: { id: string } }) {
+  const { group, workspace } = await deleteGroup(params.id);
+
+  return Response.json({ group, workspace });
 }

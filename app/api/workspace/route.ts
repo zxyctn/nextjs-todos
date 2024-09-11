@@ -1,7 +1,8 @@
 import {
   getWorkspaces,
   createWorkspace,
-  updateWorkspace,
+  updateWorkspaceName,
+  updateWorkspaceGroupOrder,
   deleteWorkspace,
   selectWorkspace,
 } from '@/lib/db';
@@ -17,22 +18,6 @@ export async function GET() {
 export async function POST(req: Request) {
   const { name } = await req.json();
 
-  const workspace = await createWorkspace(name);
-  return Response.json(await selectWorkspace(workspace.id));
-}
-
-export async function PUT(req: Request) {
-  const { id, name } = await req.json();
-
-  const workspace = await updateWorkspace(id, name);
-
-  return Response.json(await selectWorkspace(workspace.id));
-}
-
-export async function DELETE(req: Request) {
-  const { id } = await req.json();
-
-  const workspace = await deleteWorkspace(id);
-
-  return Response.json(workspace);
+  const { selected, workspaces } = await createWorkspace(name);
+  return Response.json({ selected, workspaces });
 }
