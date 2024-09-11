@@ -145,36 +145,38 @@ const AddTask = ({
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <DialogTitle className='hidden'>Add task</DialogTitle>
-        <div className='flex flex-col gap-8'>
-          <div className='flex flex-col'>
-            <div className='flex flex-col gap-2'>
-              <Label
-                htmlFor={`add-task-${groupId}`}
-                className='text-lg font-semibold'
-              >
-                Title
-              </Label>
-              <Input
-                id={`add-task-${groupId}`}
-                type='text'
-                className=''
-                value={name}
-                onChange={handleNameChange}
-              />
-              <p className='text-xs'>
-                In group <span className='font-bold'>{groupName}</span>
-              </p>
+        <div className='overflow-auto max-h-[50vh] h-min'>
+          <DialogTitle className='hidden'>Add task</DialogTitle>
+          <div className='flex flex-col gap-8'>
+            <div className='flex flex-col'>
+              <div className='flex flex-col gap-2'>
+                <Label
+                  htmlFor={`add-task-${groupId}`}
+                  className='text-lg font-semibold'
+                >
+                  Title
+                </Label>
+                <Input
+                  id={`add-task-${groupId}`}
+                  type='text'
+                  className=''
+                  value={name}
+                  onChange={handleNameChange}
+                />
+                <p className='text-xs'>
+                  In group <span className='font-bold'>{groupName}</span>
+                </p>
+              </div>
             </div>
-          </div>
-          <div className='flex flex-col gap-2'>
-            <Label htmlFor='description'>Description</Label>
-            <Textarea
-              placeholder='Task description'
-              id='description'
-              onChange={handleDescriptionChange}
-              value={description}
-            />
+            <div className='flex flex-col gap-2'>
+              <Label htmlFor='description'>Description</Label>
+              <Textarea
+                placeholder='Task description'
+                id='description'
+                onChange={handleDescriptionChange}
+                value={description}
+              />
+            </div>
           </div>
         </div>
         <DialogFooter>
