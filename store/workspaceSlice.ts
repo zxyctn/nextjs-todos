@@ -27,7 +27,8 @@ const initialState: {
   };
   isLoading: {
     value: boolean;
-    type: 'loading' | 'saving' | 'failed';
+    message: string;
+    type: 'success' | 'error';
   };
 } = {
   current: {
@@ -47,7 +48,8 @@ const initialState: {
   },
   isLoading: {
     value: false,
-    type: 'loading',
+    message: '',
+    type: 'success',
   },
 };
 
@@ -515,7 +517,8 @@ export const workspaceSlice = createSlice({
       state,
       action: PayloadAction<{
         value: boolean;
-        type: 'loading' | 'saving' | 'failed';
+        message: string;
+        type: 'success' | 'error';
       }>
     ) => {
       state.isLoading = action.payload;

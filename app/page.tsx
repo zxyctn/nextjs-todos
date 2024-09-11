@@ -21,8 +21,6 @@ import {
 } from '@/store/workspaceSlice';
 
 const Home = () => {
-  const [loadingText, setLoadingText] = useState('Loading...');
-
   const workspaceState = useAppSelector((state) => state.workspace);
   const dispatch = useAppDispatch();
 
@@ -72,7 +70,8 @@ const Home = () => {
       dispatch(
         setIsLoading({
           value: true,
-          type: 'saving',
+          message: 'Moving task...',
+          type: 'success',
         })
       );
 
@@ -111,11 +110,12 @@ const Home = () => {
         dispatch(
           setIsLoading({
             value: false,
-            type: 'failed',
+            message: 'Failed moving task',
+            type: 'error',
           })
         );
 
-        throw new Error('Failed to move task');
+        throw new Error('Failed moving task');
       }
 
       const { task, activity } = await res.json();
@@ -141,7 +141,8 @@ const Home = () => {
       dispatch(
         setIsLoading({
           value: false,
-          type: 'saving',
+          message: 'Moved task successfully',
+          type: 'success',
         })
       );
     } else {
@@ -157,7 +158,8 @@ const Home = () => {
       dispatch(
         setIsLoading({
           value: true,
-          type: 'saving',
+          message: 'Moving group...',
+          type: 'success',
         })
       );
 
@@ -182,17 +184,19 @@ const Home = () => {
         dispatch(
           setIsLoading({
             value: false,
-            type: 'failed',
+            message: 'Failed moving group',
+            type: 'error',
           })
         );
 
-        throw new Error('Failed to move group');
+        throw new Error('Failed moving group');
       }
 
       dispatch(
         setIsLoading({
           value: false,
-          type: 'saving',
+          message: 'Moved group successfully',
+          type: 'success',
         })
       );
     }
@@ -200,29 +204,21 @@ const Home = () => {
 
   useEffect(() => {
     if (isLoading.value) {
-      const loadingText =
-        isLoading.type === 'loading' ? 'Loading...' : 'Saving changes...';
-
-      setLoadingText(loadingText);
-
-      toast.loading(loadingText, {
+      toast.loading(isLoading.message, {
         id: 'loading',
       });
     } else {
-      let loadedText = '';
-
-      if (isLoading.type === 'loading') {
-        loadedText = 'Loaded successfully';
-      } else if (isLoading.type === 'saving') {
-        loadedText = 'Saved successfully';
+      if (isLoading.type === 'success') {
+        toast.success(isLoading.message, {
+          id: 'loading',
+          duration: 500,
+        });
       } else {
-        loadedText = 'Failed loading';
+        toast.error(isLoading.message, {
+          id: 'loading',
+          duration: 2000,
+        });
       }
-
-      toast.success(loadedText, {
-        id: 'loading',
-        duration: loadedText !== 'Failed loading' ? 2000 : 500,
-      });
     }
   }, [isLoading, isDragDisabled]);
 
@@ -231,14 +227,16 @@ const Home = () => {
       dispatch(
         setIsLoading({
           value: true,
-          type: 'loading',
+          message: 'Fetching workspaces...',
+          type: 'success',
         })
       );
       await fetchWorkspaces();
       dispatch(
         setIsLoading({
           value: false,
-          type: 'loading',
+          message: 'Fetched workspaces successfully',
+          type: 'success',
         })
       );
     };
