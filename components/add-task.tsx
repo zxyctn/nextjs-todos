@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
 import {
@@ -47,6 +48,11 @@ const AddTask = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (name === '') {
+      toast.error('Task name cannot be empty');
+      return;
+    }
 
     dispatch(
       setIsDragDisabled({

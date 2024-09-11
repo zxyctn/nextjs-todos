@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import { Check, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -30,6 +31,11 @@ const TitleEditor = ({
   };
 
   const handleSave = () => {
+    if (value === '') {
+      toast.error('Title cannot be empty');
+      return;
+    }
+
     handleEditingChange('save', value);
     setIsEditing(false);
   };
