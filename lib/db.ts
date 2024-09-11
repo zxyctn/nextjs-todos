@@ -11,7 +11,13 @@ export const createWorkspace = async (name: string) => {
     include: {
       groups: {
         include: {
-          tasks: true,
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
         },
       },
     },
@@ -28,8 +34,25 @@ export const createWorkspace = async (name: string) => {
     if (!workspaces) {
       throw new Error(`Workspaces could not be updated`);
     } else {
+      const all = await prisma.workspace.findMany({
+        where: { userId: '1' }, // TODO: replace with actual user id
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       return {
-        workspaces,
+        workspaces: all,
         selected,
       };
     }
@@ -38,7 +61,20 @@ export const createWorkspace = async (name: string) => {
 
 export const getWorkspaces = async (userId: string) => {
   const workspaces = await prisma.workspace.findMany({
-    where: { userId, selected: false },
+    where: { userId },
+    include: {
+      groups: {
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!workspaces) {
@@ -49,7 +85,13 @@ export const getWorkspaces = async (userId: string) => {
       include: {
         groups: {
           include: {
-            tasks: true,
+            tasks: {
+              include: {
+                activities: {
+                  orderBy: { createdAt: 'desc' },
+                },
+              },
+            },
           },
         },
       },
@@ -73,7 +115,13 @@ export const selectWorkspace = async (id: string) => {
     include: {
       groups: {
         include: {
-          tasks: true,
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
         },
       },
     },
@@ -90,8 +138,25 @@ export const selectWorkspace = async (id: string) => {
     if (!workspaces) {
       throw new Error(`Workspaces could not be updated`);
     } else {
+      const all = await prisma.workspace.findMany({
+        where: { userId: '1' }, // TODO: replace with actual user id
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       return {
-        workspaces,
+        workspaces: all,
         selected,
       };
     }
@@ -105,7 +170,13 @@ export const updateWorkspaceName = async (id: string, name: string) => {
     include: {
       groups: {
         include: {
-          tasks: true,
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
         },
       },
     },
@@ -118,32 +189,9 @@ export const updateWorkspaceName = async (id: string, name: string) => {
   }
 };
 
-export const updateWorkspaceGroupOrder = async (
-  id: string,
-  groupOrder: string[]
-) => {
-  const selected = await prisma.workspace.update({
-    where: { id },
-    data: { groupOrder },
-    include: {
-      groups: {
-        include: {
-          tasks: true,
-        },
-      },
-    },
-  });
-
-  if (!selected) {
-    throw new Error(`Workspace ${id} could not be updated`);
-  }
-
-  return selected;
-};
-
 export const deleteWorkspace = async (id: string) => {
   const workspace = await prisma.workspace.delete({
-    where: { id },
+    where: { id, userId: '1' },
   });
 
   if (workspace.selected) {
@@ -155,15 +203,53 @@ export const deleteWorkspace = async (id: string) => {
       const selected = await prisma.workspace.update({
         where: { id: first.id },
         data: { selected: true },
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
+
+      if (!selected) {
+        throw new Error(`Workspace ${first.id} could not be selected`);
+      }
 
       const workspaces = await prisma.workspace.updateMany({
         where: { id: { not: first.id }, userId: '1' }, // TODO: replace with actual user id
         data: { selected: false },
       });
 
+      if (!workspaces) {
+        throw new Error(`Workspaces could not be updated`);
+      }
+
+      const all = await prisma.workspace.findMany({
+        where: { userId: '1' }, // TODO: replace with actual user id
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
       return {
-        workspaces,
+        workspaces: all,
         selected,
       };
     }
@@ -185,7 +271,13 @@ export const createGroup = async (workspaceId: string, name: string) => {
         workspaceId,
       },
       include: {
-        tasks: true,
+        tasks: {
+          include: {
+            activities: {
+              orderBy: { createdAt: 'desc' },
+            },
+          },
+        },
       },
     });
 
@@ -193,6 +285,19 @@ export const createGroup = async (workspaceId: string, name: string) => {
       const updated = await prisma.workspace.update({
         where: { id: workspaceId },
         data: { groupOrder: [...workspace.groupOrder, group.id] },
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
       if (updated) {
@@ -211,19 +316,83 @@ export const createGroup = async (workspaceId: string, name: string) => {
   }
 };
 
-export const updateGroupTaskOrder = async (id: string, taskOrder: string[]) => {
-  const group = await prisma.group.update({
+export const moveGroup = async (id: string, index: number) => {
+  const group = await prisma.group.findFirst({
     where: { id },
-    data: { taskOrder },
+    include: {
+      tasks: {
+        include: {
+          activities: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      },
+    },
   });
 
-  return group;
+  if (group) {
+    const workspace = await prisma.workspace.findFirst({
+      where: { id: group.workspaceId },
+    });
+
+    if (workspace) {
+      const groupOrder = workspace.groupOrder.filter(
+        (groupId) => groupId !== id
+      );
+
+      const updated = await prisma.workspace.update({
+        where: { id: group.workspaceId },
+        data: {
+          groupOrder: [
+            ...groupOrder.slice(0, index),
+            id,
+            ...groupOrder.slice(index),
+          ],
+        },
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (updated) {
+        return {
+          group,
+          workspace: updated,
+        };
+      } else {
+        throw new Error(`Group could not be moved`);
+      }
+    } else {
+      throw new Error(`Workspace ${group.workspaceId} not found`);
+    }
+  } else {
+    throw new Error(`Group ${id} not found`);
+  }
 };
 
 export const updateGroupName = async (id: string, name: string) => {
   const group = await prisma.group.update({
     where: { id },
     data: { name },
+    include: {
+      tasks: {
+        include: {
+          activities: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      },
+    },
   });
 
   return group;
@@ -244,6 +413,19 @@ export const deleteGroup = async (id: string) => {
         where: { id: group.workspaceId },
         data: {
           groupOrder: workspace.groupOrder.filter((groupId) => groupId !== id),
+        },
+        include: {
+          groups: {
+            include: {
+              tasks: {
+                include: {
+                  activities: {
+                    orderBy: { createdAt: 'desc' },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 
@@ -275,6 +457,11 @@ export const createTask = async (
       description,
       groupId,
     },
+    include: {
+      activities: {
+        orderBy: { createdAt: 'desc' },
+      },
+    },
   });
 
   if (task) {
@@ -286,12 +473,33 @@ export const createTask = async (
       const updated = await prisma.group.update({
         where: { id: groupId },
         data: { taskOrder: [...group.taskOrder, task.id] },
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
+        },
       });
 
       if (updated) {
+        const activity = await prisma.activity.create({
+          data: {
+            taskId: task.id,
+            content: `Task created in group ${group.name}`,
+          },
+        });
+
+        if (!activity) {
+          throw new Error(`Task activity could not be created`);
+        }
+
         return {
           task,
           group: updated,
+          activity,
         };
       } else {
         throw new Error(`Task could not be created`);
@@ -304,11 +512,7 @@ export const createTask = async (
   }
 };
 
-export const updateTaskGroup = async (
-  id: string,
-  index: number,
-  groupId: string
-) => {
+export const moveTask = async (id: string, index: number, groupId: string) => {
   const task = await prisma.task.findFirst({
     where: { id },
     include: {
@@ -316,36 +520,60 @@ export const updateTaskGroup = async (
     },
   });
 
-  const updated = await prisma.task.update({
-    where: { id },
-    data: { groupId },
-    include: {
-      group: true,
-    },
-  });
+  if (task) {
+    const oldGroup = await prisma.group.update({
+      where: { id: task.groupId },
+      data: {
+        taskOrder: task.group.taskOrder.filter((taskId) => taskId !== id),
+      },
+    });
 
-  if (task && updated) {
-    await updateGroupTaskOrder(
-      task.group.id,
-      task.group.taskOrder.filter((taskId) => taskId !== id) || []
-    );
+    if (!oldGroup) {
+      throw new Error(`Task could not be moved`);
+    }
 
-    await updateGroupTaskOrder(updated.group.id, [
-      ...updated.group.taskOrder.slice(0, index),
-      id,
-      ...updated.group.taskOrder.slice(index),
-    ]);
+    const updated = await prisma.task.update({
+      where: { id },
+      data: { groupId },
+      include: {
+        group: true,
+      },
+    });
 
-    await prisma.activity.create({
+    if (!updated) {
+      throw new Error(`Task could not be updated`);
+    }
+
+    const newGroup = await prisma.group.update({
+      where: { id: groupId },
+      data: {
+        taskOrder: [
+          ...updated.group.taskOrder.slice(0, index),
+          id,
+          ...updated.group.taskOrder.slice(index),
+        ],
+      },
+    });
+
+    if (!newGroup) {
+      throw new Error(`Task could not be moved`);
+    }
+
+    const activity = await prisma.activity.create({
       data: {
         taskId: id,
         content: `Task moved to group ${updated.group.name}`,
       },
     });
 
-    return task;
-  } else if (!task) {
-    throw new Error(`Task ${id} not found`);
+    if (!activity) {
+      throw new Error(`Task activity could not be created`);
+    }
+
+    return {
+      task,
+      activity,
+    };
   } else {
     throw new Error(`Task ${id} could not be updated`);
   }
@@ -359,17 +587,19 @@ export const updateTaskContent = async (
     where: { id },
   });
 
+  let activity;
+
   if (task) {
     if (content.name !== task.name) {
       if (content.description !== task.description) {
-        await prisma.activity.create({
+        activity = await prisma.activity.create({
           data: {
             taskId: id,
             content: `Task name and description updated: ${content.name}`,
           },
         });
       } else {
-        await prisma.activity.create({
+        activity = await prisma.activity.create({
           data: {
             taskId: id,
             content: `Task name updated: ${content.name}`,
@@ -377,7 +607,7 @@ export const updateTaskContent = async (
         });
       }
     } else if (content.description !== task.description) {
-      await prisma.activity.create({
+      activity = await prisma.activity.create({
         data: {
           taskId: id,
           content: `Task description updated: ${content.description}`,
@@ -392,7 +622,10 @@ export const updateTaskContent = async (
       data: { ...content },
     });
 
-    return updated;
+    return {
+      task: updated,
+      activity,
+    };
   } else if (!task) {
     throw new Error(`Task ${id} not found`);
   } else {
@@ -415,6 +648,15 @@ export const deleteTask = async (id: string) => {
         where: { id: task.groupId },
         data: {
           taskOrder: group.taskOrder.filter((taskId) => taskId !== id),
+        },
+        include: {
+          tasks: {
+            include: {
+              activities: {
+                orderBy: { createdAt: 'desc' },
+              },
+            },
+          },
         },
       });
 
