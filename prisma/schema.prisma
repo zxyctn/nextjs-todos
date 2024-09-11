@@ -12,7 +12,7 @@ model Activity {
   id            String     @default(cuid()) @id
   content       String
   createdAt     DateTime  @default(now()) @map(name: "created_at")
-  task          Task     @relation(fields: [taskId], references: [id])
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId        String
 }
 
@@ -21,7 +21,7 @@ model Task {
   name          String
   description   String?
   createdAt     DateTime  @default(now()) @map(name: "created_at")
-  group         Group      @relation(fields: [groupId], references: [id])
+  group         Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId       String
   activities    Activity[]
 }
@@ -31,7 +31,7 @@ model Group {
   name          String
   tasks         Task[]
   taskOrder     String[]      @default([])
-  workspace     Workspace  @relation(fields: [workspaceId], references: [id])
+  workspace     Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId   String
   @@unique([workspaceId, name], name: "GroupIdentifier")
 }
@@ -42,7 +42,7 @@ model Workspace {
   groups        Group[]
   groupOrder    String[]      @default([])
   selected      Boolean    @default(false)
-  user          User       @relation(fields: [userId], references: [id])
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
   @@unique([userId, name], name: "workspaceIdentifier")
 }
