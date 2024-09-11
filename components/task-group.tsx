@@ -164,7 +164,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
     >
       {(providedDraggable) => (
         <div
-          className='flex flex-col gap-4 w-[300px] mx-16'
+          className='flex flex-col gap-4 w-[300px] sm:mx-16 mx-8'
           ref={providedDraggable.innerRef}
           {...providedDraggable.draggableProps}
         >

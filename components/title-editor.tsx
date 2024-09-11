@@ -51,7 +51,7 @@ const TitleEditor = ({
   };
 
   return isEditing ? (
-    <div className='flex gap-2'>
+    <div className='flex gap-2 grow sm:grow-0'>
       <Input
         type='text'
         placeholder='Title'
@@ -75,7 +75,7 @@ const TitleEditor = ({
     </div>
   ) : (
     <Button
-      className={cn('font-semibold justify-start p-0', {
+      className={cn('font-semibold justify-start p-0 grow sm:grow-0', {
         'text-2xl': size === '2xl',
         'text-xl': size === 'xl',
         'text-lg': size === 'lg',
