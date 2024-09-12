@@ -100,12 +100,12 @@ const Task = ({
           >
             <CardHeader
               onClick={() => handleDialogOpenChange(true)}
-              className='cursor-pointer'
+              className='cursor-pointer px-6 pb-0'
             >
               <CardTitle>{task.name}</CardTitle>
-              <CardDescription className='relative h-12 overflow-hidden'>
+              <CardDescription className='relative h-16 overflow-hidden'>
                 <p>{task.description}</p>
-                <div className='absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-secondary to-transparent' />
+                <div className='absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-secondary to-transparent' />
               </CardDescription>
             </CardHeader>
             <CardFooter className='p-0 justify-between'>
@@ -126,7 +126,12 @@ const Task = ({
                 description={`Are you sure you want to delete task ${task.name}?`}
               >
                 <Button size='icon' variant='ghost'>
-                  <Trash size={16} />
+                  <Trash
+                    size={16}
+                    className={cn({
+                      'opacity-0': !mouseOver,
+                    })}
+                  />
                 </Button>
               </Confirm>
             </CardFooter>
