@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { toast } from 'sonner';
-import { Plus } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 
 import {
   Dialog,
@@ -33,6 +33,7 @@ const AddTask = ({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('Untitled');
   const [description, setDescription] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const dispatch = useAppDispatch();
 
@@ -70,6 +71,8 @@ const AddTask = ({
       })
     );
 
+    setIsSaving(true);
+
     const res = await fetch('/api/task', {
       method: 'POST',
       body: JSON.stringify({
@@ -91,6 +94,7 @@ const AddTask = ({
     );
 
     setOpen(false);
+    setIsSaving(false);
 
     if (res.ok) {
       const { task, activity } = await res.json();
@@ -189,7 +193,10 @@ const AddTask = ({
             </Button>
           </DialogClose>
           <Button type='submit' onClick={handleSubmit}>
-            Save
+            <div className='flex items-center justify-center'>
+              {isSaving && <Loader2 className='mr-3 h-4 w-4 animate-spin' />}
+              Save
+            </div>
           </Button>
         </DialogFooter>
       </DialogContent>
