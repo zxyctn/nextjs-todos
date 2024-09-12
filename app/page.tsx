@@ -368,7 +368,7 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    if (isGuest) {
+    if (isGuest && typeof window !== 'undefined') {
       localStorage.setItem(
         'workspaces',
         JSON.stringify(workspaceState.workspaces)

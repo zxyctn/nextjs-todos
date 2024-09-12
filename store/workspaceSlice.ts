@@ -55,14 +55,16 @@ const initialState: {
   isGuest: false,
 };
 
-const lsWorkspaces = localStorage.getItem('workspaces');
-const lsCurrent = localStorage.getItem('current');
+if (typeof window !== 'undefined') {
+  const lsWorkspaces = localStorage.getItem('workspaces');
+  const lsCurrent = localStorage.getItem('current');
 
-if (lsWorkspaces) {
-  initialState.workspaces = JSON.parse(lsWorkspaces);
-}
-if (lsCurrent) {
-  initialState.current = getCurrentWorkspace(JSON.parse(lsCurrent));
+  if (lsWorkspaces) {
+    initialState.workspaces = JSON.parse(lsWorkspaces);
+  }
+  if (lsCurrent) {
+    initialState.current = getCurrentWorkspace(JSON.parse(lsCurrent));
+  }
 }
 
 export const workspaceSlice = createSlice({
