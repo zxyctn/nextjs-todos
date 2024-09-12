@@ -34,23 +34,23 @@ const Home = () => {
   );
 
   const fetchWorkspaces = async () => {
-    let workspaces: WorkspaceWithGroups[] = [];
-    let current: WorkspaceWithOrderedGroups = {
-      id: '',
-      name: '',
-      groupOrder: [],
-      groups: [],
-      selected: true,
-      userId: '',
-      orderedGroups: [],
-    };
-
     if (isGuest) {
       const lsWorkspaces = localStorage.getItem('workspaces');
       const lsCurrent = localStorage.getItem('current');
-
-      workspaces = lsWorkspaces ? JSON.parse(lsWorkspaces) : workspaces;
-      current = lsCurrent ? JSON.parse(lsCurrent) : current;
+      const workspaces = lsWorkspaces ? JSON.parse(lsWorkspaces) : [];
+      const current = lsCurrent
+        ? JSON.parse(lsCurrent)
+        : {
+            id: '',
+            name: '',
+            groupOrder: [],
+            groups: [],
+            selected: true,
+            userId: '',
+            orderedGroups: [],
+          };
+      dispatch(setWorkspaces(workspaces));
+      dispatch(setCurrentWorkspace(current));
     } else {
       const res = await fetch('/api/workspace');
 
@@ -59,18 +59,15 @@ const Home = () => {
         throw new Error('Failed fetching workspaces');
       }
 
-      const data = await res.json();
+      const { workspaces, selected } = await res.json();
 
       if (!workspaces.length) {
         return;
       }
 
-      workspaces = data.workspaces;
-      current = data.selected;
+      dispatch(setWorkspaces(workspaces));
+      dispatch(setCurrentWorkspace(selected));
     }
-
-    dispatch(setWorkspaces(workspaces));
-    dispatch(setCurrentWorkspace(current));
   };
 
   const handleDragEnd = async (result: DropResult) => {
