@@ -164,7 +164,7 @@ const EditTask = ({
                           <div className='size-2 bg-primary/20 rounded-full'></div>
                         </div>
 
-                        <div className='max-w-96'>
+                        <div className='max-w-64 sm:max-w-72 md:max-w-96'>
                           <div key={activity.id} className='text-sm truncate'>
                             {activity.content}
                           </div>
