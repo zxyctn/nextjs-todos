@@ -31,11 +31,11 @@ const Task = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
 
-  const dispatch = useAppDispatch();
-
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
   const isDragDisabled = useAppSelector(
     (state) => state.workspace.isDragDisabled.value
   );
+  const dispatch = useAppDispatch();
 
   const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
@@ -54,22 +54,24 @@ const Task = ({
       })
     );
 
-    const res = await fetch(`/api/task/${task.id}`, {
-      method: 'DELETE',
-    });
+    if (!isGuest) {
+      const res = await fetch(`/api/task/${task.id}`, {
+        method: 'DELETE',
+      });
 
-    setIsDialogOpen(false);
+      setIsDialogOpen(false);
 
-    if (!res) {
-      console.error('Failed deleting task');
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed deleting task',
-          type: 'error',
-        })
-      );
-      throw new Error('Failed deleting task');
+      if (!res) {
+        console.error('Failed deleting task');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed deleting task',
+            type: 'error',
+          })
+        );
+        throw new Error('Failed deleting task');
+      }
     }
 
     dispatch(deleteTask(task.id));
@@ -81,6 +83,8 @@ const Task = ({
         type: 'success',
       })
     );
+
+    setIsDialogOpen(false);
   };
 
   return (

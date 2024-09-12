@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Check, X } from 'lucide-react';
 
@@ -33,6 +33,7 @@ const TitleEditor = ({
   const handleSave = () => {
     if (value === '') {
       toast.error('Title cannot be empty');
+      console.error('Title cannot be empty');
       return;
     }
 
@@ -49,6 +50,10 @@ const TitleEditor = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
+
+  useEffect(() => {
+    setValue(name);
+  }, [name]);
 
   return isEditing ? (
     <div className='flex gap-2 grow sm:grow-0'>

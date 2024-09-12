@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import moment from 'moment';
+import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 
 import Confirm from '@/components/confirm';
@@ -12,7 +13,7 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useAppDispatch } from '@/store/store';
+import { useAppDispatch, useAppSelector } from '@/store/store';
 import { setIsLoading, updateTaskContent } from '@/store/workspaceSlice';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ const EditTask = ({
   const [description, setDescription] = useState(task.description || '');
   const [isSaving, setIsSaving] = useState(false);
 
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
   const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,7 +58,12 @@ const EditTask = ({
   ) => {
     e.preventDefault();
 
-    setIsSaving(true);
+    if (name === '') {
+      console.error('Task name cannot be empty');
+      toast.error('Task name cannot be empty');
+      return;
+    }
+
     dispatch(
       setIsLoading({
         value: true,
@@ -65,40 +72,81 @@ const EditTask = ({
       })
     );
 
-    const res = await fetch(`/api/task/${task.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ name, description }),
-    });
+    if (!isGuest) {
+      setIsSaving(true);
 
-    if (!res.ok) {
-      console.error('Failed updating task');
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed updating task',
-          type: 'error',
-        })
-      );
+      const res = await fetch(`/api/task/${task.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ name, description }),
+      });
+
+      if (!res.ok) {
+        console.error('Failed updating task');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed updating task',
+            type: 'error',
+          })
+        );
+        setIsSaving(false);
+        throw new Error('Failed updating task');
+      }
+
+      const { activity } = await res.json();
+
+      if (activity) {
+        dispatch(
+          updateTaskContent({
+            taskId: task.id,
+            name,
+            description,
+            activityId: activity.id,
+            activityContent: activity.content,
+            activityCreatedAt: activity.createdAt,
+          })
+        );
+      }
+
       setIsSaving(false);
-      throw new Error('Failed updating task');
-    }
+    } else {
+      let activity: { id: string; content: string } | undefined;
 
-    const { activity } = await res.json();
-    if (activity) {
-      dispatch(
-        updateTaskContent({
-          taskId: task.id,
-          name,
-          description,
-          activityId: activity.id,
-          activityContent: activity.content,
-          activityCreatedAt: activity.createdAt,
-        })
-      );
+      if (name !== task.name) {
+        if (description !== task.description) {
+          activity = {
+            id: `activity_${+new Date()}`,
+            content: `Task name and description updated: ${name}`,
+          };
+        } else {
+          activity = {
+            id: `activity_${+new Date()}`,
+            content: `Task name updated: ${name}`,
+          };
+        }
+      } else if (description !== task.description) {
+        activity = {
+          id: `activity_${+new Date()}`,
+          content: `Task description updated: ${description}`,
+        };
+      }
+
+      if (activity) {
+        dispatch(
+          updateTaskContent({
+            taskId: task.id,
+            name,
+            description,
+            activityId: activity.id,
+            activityContent: activity.content,
+            activityCreatedAt: new Date(),
+          })
+        );
+      }
     }
 
     handleDialogOpenChange(false);
-    setIsSaving(false);
+
     dispatch(
       setIsLoading({
         value: false,

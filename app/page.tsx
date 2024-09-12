@@ -18,10 +18,14 @@ import {
   setIsLoading,
   setWorkspaces,
   updateTaskContent,
+  WorkspaceWithOrderedGroups,
 } from '@/store/workspaceSlice';
+import { WorkspaceWithGroups } from '@/lib/prisma';
 
 const Home = () => {
   const workspaceState = useAppSelector((state) => state.workspace);
+  const currentWorkspace = useAppSelector((state) => state.workspace.current);
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
   const dispatch = useAppDispatch();
 
   const isLoading = useAppSelector((state) => state.workspace.isLoading);
@@ -30,21 +34,43 @@ const Home = () => {
   );
 
   const fetchWorkspaces = async () => {
-    const res = await fetch('/api/workspace');
+    let workspaces: WorkspaceWithGroups[] = [];
+    let current: WorkspaceWithOrderedGroups = {
+      id: '',
+      name: '',
+      groupOrder: [],
+      groups: [],
+      selected: true,
+      userId: '',
+      orderedGroups: [],
+    };
 
-    if (!res) {
-      console.error('Failed fetching workspaces');
-      throw new Error('Failed fetching workspaces');
-    }
+    if (isGuest) {
+      const lsWorkspaces = localStorage.getItem('workspaces');
+      const lsCurrent = localStorage.getItem('current');
 
-    const { workspaces, selected } = await res.json();
+      workspaces = lsWorkspaces ? JSON.parse(lsWorkspaces) : workspaces;
+      current = lsCurrent ? JSON.parse(lsCurrent) : current;
+    } else {
+      const res = await fetch('/api/workspace');
 
-    if (!workspaces.length) {
-      return;
+      if (!res) {
+        console.error('Failed fetching workspaces');
+        throw new Error('Failed fetching workspaces');
+      }
+
+      const data = await res.json();
+
+      if (!workspaces.length) {
+        return;
+      }
+
+      workspaces = data.workspaces;
+      current = data.selected;
     }
 
     dispatch(setWorkspaces(workspaces));
-    dispatch(setCurrentWorkspace(selected));
+    dispatch(setCurrentWorkspace(current));
   };
 
   const handleDragEnd = async (result: DropResult) => {
@@ -87,68 +113,128 @@ const Home = () => {
         })
       );
 
-      const res = await fetch(`/api/task/${taskId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          groupId: dInd,
-          index: destination.index,
-        }),
-      });
-
-      if (!res.ok) {
-        dispatch(
-          moveTask({
-            sourceGroupId: dInd,
-            destinationGroupId: sInd,
-            taskId,
-            sourceIndex: destination.index,
-            destinationIndex: source.index,
-          })
-        );
+      if (!isGuest) {
+        const res = await fetch(`/api/task/${taskId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            groupId: dInd,
+            index: destination.index,
+          }),
+        });
 
         dispatch(
-          setIsLoading({
+          setIsDragDisabled({
             value: false,
-            message: 'Failed moving task',
-            type: 'error',
+            sourceDroppableId: '',
+            destinationDroppableId: '',
           })
         );
 
-        throw new Error('Failed moving task');
-      }
+        if (!res.ok) {
+          dispatch(
+            moveTask({
+              sourceGroupId: dInd,
+              destinationGroupId: sInd,
+              taskId,
+              sourceIndex: destination.index,
+              destinationIndex: source.index,
+            })
+          );
 
-      const { task, activity } = await res.json();
+          dispatch(
+            setIsLoading({
+              value: false,
+              message: 'Failed moving task',
+              type: 'error',
+            })
+          );
 
-      if (activity) {
-        dispatch(
-          updateTaskContent({
-            taskId: task.id,
-            name: task.name,
-            description: task.description,
-            activityId: activity.id,
-            activityContent: activity.content,
-          })
-        );
+          throw new Error('Failed moving task');
+        }
+
+        const { task, activity } = await res.json();
+
+        if (activity) {
+          dispatch(
+            updateTaskContent({
+              taskId: task.id,
+              name: task.name,
+              description: task.description,
+              activityId: activity.id,
+              activityContent: activity.content,
+            })
+          );
+        } else {
+          dispatch(
+            updateTaskContent({
+              taskId: task.id,
+              name: task.name,
+              description: task.description,
+            })
+          );
+        }
       } else {
         dispatch(
-          updateTaskContent({
-            taskId: task.id,
-            name: task.name,
-            description: task.description,
+          setIsDragDisabled({
+            value: false,
+            sourceDroppableId: '',
+            destinationDroppableId: '',
           })
         );
-      }
 
-      dispatch(
-        setIsDragDisabled({
-          value: false,
-          sourceDroppableId: '',
-          destinationDroppableId: '',
-        })
-      );
+        console.log(taskId, dInd);
+
+        const task = workspaceState.current.groups
+          .find((group) => group.id === sInd)
+          ?.tasks.find((task) => task.id === taskId);
+
+        const newGroup = workspaceState.current.groups.find(
+          (group) => group.id === dInd
+        );
+
+        if (!task || !newGroup) {
+          dispatch(
+            setIsLoading({
+              value: false,
+              message: 'Failed moving task',
+              type: 'error',
+            })
+          );
+
+          throw new Error('Failed moving task');
+        }
+
+        const activity =
+          sInd === dInd
+            ? undefined
+            : {
+                id: `activity-${+new Date()}`,
+                content: `Task moved to group ${newGroup.name}`,
+              };
+
+        if (activity) {
+          dispatch(
+            updateTaskContent({
+              taskId: task.id,
+              name: task.name,
+              description: task.description || '',
+              activityId: activity.id,
+              activityContent: activity.content,
+            })
+          );
+        } else {
+          dispatch(
+            updateTaskContent({
+              taskId: task.id,
+              name: task.name,
+              description: task.description || '',
+            })
+          );
+        }
+      }
 
       dispatch(
         setIsLoading({
@@ -185,41 +271,43 @@ const Home = () => {
         })
       );
 
-      const res = await fetch(`/api/group/${groupId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          index: destination.index,
-        }),
-      });
+      if (!isGuest) {
+        const res = await fetch(`/api/group/${groupId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            index: destination.index,
+          }),
+        });
 
-      if (!res.ok) {
-        dispatch(
-          moveGroup({
-            id: groupId,
-            index: source.index,
-          })
-        );
+        if (!res.ok) {
+          dispatch(
+            moveGroup({
+              id: groupId,
+              index: source.index,
+            })
+          );
 
-        dispatch(
-          setIsLoading({
-            value: false,
-            message: 'Failed moving group',
-            type: 'error',
-          })
-        );
+          dispatch(
+            setIsLoading({
+              value: false,
+              message: 'Failed moving group',
+              type: 'error',
+            })
+          );
 
-        dispatch(
-          setIsDragDisabled({
-            value: false,
-            sourceDroppableId: '',
-            destinationDroppableId: '',
-          })
-        );
+          dispatch(
+            setIsDragDisabled({
+              value: false,
+              sourceDroppableId: '',
+              destinationDroppableId: '',
+            })
+          );
 
-        throw new Error('Failed moving group');
+          throw new Error('Failed moving group');
+        }
       }
 
       dispatch(
@@ -282,6 +370,16 @@ const Home = () => {
     init();
   }, []);
 
+  useEffect(() => {
+    if (isGuest) {
+      localStorage.setItem(
+        'workspaces',
+        JSON.stringify(workspaceState.workspaces)
+      );
+      localStorage.setItem('current', JSON.stringify(workspaceState.current));
+    }
+  }, [workspaceState.workspaces, workspaceState.current, dispatch]);
+
   return (
     <div className='flex justify-center grow'>
       <div className='grow'>
@@ -294,7 +392,7 @@ const Home = () => {
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}>
                 <div className='flex justify-start'>
-                  {workspaceState.current.orderedGroups.map(
+                  {currentWorkspace.orderedGroups.map(
                     (group: GroupWithOrderedTasks, index: number) => (
                       <TaskGroup
                         key={group.id}

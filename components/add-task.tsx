@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useAppDispatch } from '@/store/store';
+import { useAppDispatch, useAppSelector } from '@/store/store';
 import {
   createTask,
   setIsDragDisabled,
@@ -35,6 +35,7 @@ const AddTask = ({
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
   const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,17 +52,10 @@ const AddTask = ({
     e.preventDefault();
 
     if (name === '') {
+      console.error('Task name cannot be empty');
       toast.error('Task name cannot be empty');
       return;
     }
-
-    dispatch(
-      setIsDragDisabled({
-        value: true,
-        sourceDroppableId: groupId,
-        destinationDroppableId: groupId,
-      })
-    );
 
     dispatch(
       setIsLoading({
@@ -71,67 +65,90 @@ const AddTask = ({
       })
     );
 
-    setIsSaving(true);
-
-    const res = await fetch('/api/task', {
-      method: 'POST',
-      body: JSON.stringify({
-        groupId,
-        name,
-        description,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    dispatch(
-      setIsDragDisabled({
-        value: false,
-        sourceDroppableId: '',
-        destinationDroppableId: '',
-      })
-    );
-
-    setOpen(false);
-    setIsSaving(false);
-
-    if (res.ok) {
-      const { task, activity } = await res.json();
-      setName(task.name);
-      setDescription(task.description);
+    if (!isGuest) {
+      setIsSaving(true);
 
       dispatch(
-        createTask({
-          id: task.id,
+        setIsDragDisabled({
+          value: true,
+          sourceDroppableId: groupId,
+          destinationDroppableId: groupId,
+        })
+      );
+
+      const res = await fetch('/api/task', {
+        method: 'POST',
+        body: JSON.stringify({
           groupId,
           name,
           description,
-          activityId: activity.id,
-          activityContent: activity.content,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      dispatch(
+        setIsDragDisabled({
+          value: false,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
         })
       );
 
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Task created successfully',
-          type: 'success',
-        })
-      );
+      setOpen(false);
+      setIsSaving(false);
+
+      if (!res.ok) {
+        console.error('Failed creating task');
+
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed creating task',
+            type: 'error',
+          })
+        );
+
+        throw new Error('Failed creating task');
+      } else {
+        const { task, activity } = await res.json();
+        setName(task.name);
+        setDescription(task.description);
+
+        dispatch(
+          createTask({
+            id: task.id,
+            groupId,
+            name,
+            description,
+            activityId: activity.id,
+            activityContent: activity.content,
+          })
+        );
+      }
     } else {
-      console.error('Failed creating task');
-
       dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed creating task',
-          type: 'error',
+        createTask({
+          id: `task_${+new Date()}`,
+          groupId,
+          name,
+          description,
+          activityId: `activity_${+new Date()}`,
+          activityContent: `Task created in group ${groupName}`,
         })
       );
 
-      throw new Error('Failed creating task');
+      setOpen(false);
     }
+
+    dispatch(
+      setIsLoading({
+        value: false,
+        message: 'Task created successfully',
+        type: 'success',
+      })
+    );
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {

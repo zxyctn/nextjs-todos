@@ -25,6 +25,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
   const [mouseOver, setMouseOver] = useState(false);
 
   const dispatch = useAppDispatch();
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
 
   const currentGroup = useAppSelector((state) =>
     state.workspace.current.orderedGroups.find((g) => g.id === groupId)
@@ -57,6 +58,62 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
 
       dispatch(updateGroupName({ id: groupId, name: value }));
 
+      if (!isGuest) {
+        dispatch(
+          setIsDragDisabled({
+            value: true,
+            sourceDroppableId: groupId,
+            destinationDroppableId: '',
+          })
+        );
+
+        const res = await fetch(`/api/group/${groupId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ name: value }),
+        });
+
+        dispatch(
+          setIsDragDisabled({
+            value: false,
+            sourceDroppableId: '',
+            destinationDroppableId: '',
+          })
+        );
+
+        if (!res.ok) {
+          console.error('Failed updating group name');
+          dispatch(
+            setIsLoading({
+              value: false,
+              message: 'Failed updating group name',
+              type: 'error',
+            })
+          );
+          dispatch(updateGroupName({ id: groupId, name: currentGroupName }));
+          throw new Error('Failed updating group name');
+        }
+      }
+
+      dispatch(
+        setIsLoading({
+          value: false,
+          message: 'Group name updated successfully',
+          type: 'success',
+        })
+      );
+    }
+  };
+
+  const handleGroupDelete = async () => {
+    dispatch(
+      setIsLoading({
+        value: true,
+        message: 'Deleting group...',
+        type: 'success',
+      })
+    );
+
+    if (!isGuest) {
       dispatch(
         setIsDragDisabled({
           value: true,
@@ -66,8 +123,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
       );
 
       const res = await fetch(`/api/group/${groupId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ name: value }),
+        method: 'DELETE',
       });
 
       dispatch(
@@ -79,79 +135,28 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
       );
 
       if (!res.ok) {
-        console.error('Failed updating group name');
+        console.error('Failed deleting group');
+
         dispatch(
           setIsLoading({
             value: false,
-            message: 'Failed updating group name',
+            message: 'Failed deleting group',
             type: 'error',
           })
         );
-        dispatch(updateGroupName({ id: groupId, name: currentGroupName }));
-        throw new Error('Failed updating group name');
-      } else {
-        dispatch(
-          setIsLoading({
-            value: false,
-            message: 'Group name updated successfully',
-            type: 'success',
-          })
-        );
+
+        throw new Error('Failed deleting group');
       }
     }
-  };
 
-  const handleGroupDelete = async () => {
-    dispatch(
-      setIsDragDisabled({
-        value: true,
-        sourceDroppableId: groupId,
-        destinationDroppableId: '',
-      })
-    );
-
+    dispatch(deleteGroup(groupId));
     dispatch(
       setIsLoading({
-        value: true,
-        message: 'Deleting group...',
+        value: false,
+        message: 'Group deleted successfully',
         type: 'success',
       })
     );
-
-    const res = await fetch(`/api/group/${groupId}`, {
-      method: 'DELETE',
-    });
-
-    dispatch(
-      setIsDragDisabled({
-        value: false,
-        sourceDroppableId: '',
-        destinationDroppableId: '',
-      })
-    );
-
-    if (!res.ok) {
-      console.error('Failed deleting group');
-
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed deleting group',
-          type: 'error',
-        })
-      );
-
-      throw new Error('Failed deleting group');
-    } else {
-      dispatch(deleteGroup(groupId));
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Group deleted successfully',
-          type: 'success',
-        })
-      );
-    }
   };
 
   return (

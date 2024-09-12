@@ -30,6 +30,7 @@ const initialState: {
     message: string;
     type: 'success' | 'error';
   };
+  isGuest: boolean;
 } = {
   current: {
     id: '',
@@ -51,7 +52,18 @@ const initialState: {
     message: '',
     type: 'success',
   },
+  isGuest: true,
 };
+
+const lsWorkspaces = localStorage.getItem('workspaces');
+const lsCurrent = localStorage.getItem('current');
+
+if (lsWorkspaces) {
+  initialState.workspaces = JSON.parse(lsWorkspaces);
+}
+if (lsCurrent) {
+  initialState.current = getCurrentWorkspace(JSON.parse(lsCurrent));
+}
 
 export const workspaceSlice = createSlice({
   name: 'workspace',
@@ -171,20 +183,24 @@ export const workspaceSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; name: string }>
     ) => {
+      const groups = [
+        ...state.current.groups,
+        {
+          id: action.payload.id,
+          name: action.payload.name,
+          taskOrder: [],
+          tasks: [],
+          workspaceId: state.current.id,
+        },
+      ];
+      const groupOrder = [...state.current.groupOrder, action.payload.id];
+
       state.workspaces = state.workspaces.map((w) => {
         if (w.id === state.current.id) {
           return {
             ...w,
-            groups: [
-              ...w.groups,
-              {
-                id: action.payload.id,
-                name: action.payload.name,
-                taskOrder: [],
-                tasks: [],
-                workspaceId: state.current.id,
-              },
-            ],
+            groups,
+            groupOrder,
           };
         }
 
@@ -193,16 +209,8 @@ export const workspaceSlice = createSlice({
 
       state.current = getCurrentWorkspace({
         ...state.current,
-        groups: [
-          ...state.current.groups,
-          {
-            id: action.payload.id,
-            name: action.payload.name,
-            taskOrder: [],
-            tasks: [],
-            workspaceId: state.current.id,
-          },
-        ],
+        groups,
+        groupOrder,
       });
     },
 

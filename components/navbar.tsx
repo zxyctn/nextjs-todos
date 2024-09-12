@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronUp, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
+import { ChevronUp, LogIn, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
 
 import TitleEditor from '@/components/title-editor';
 import Confirm from '@/components/confirm';
@@ -21,9 +21,12 @@ import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/store/store';
 import {
   createGroup,
+  createWorkspace,
+  deleteWorkspace,
   setCurrentWorkspace,
   setIsLoading,
   setWorkspaces,
+  updateWorkspaceName,
 } from '@/store/workspaceSlice';
 import ReduxProvider from '@/store/redux-provider';
 
@@ -33,10 +36,14 @@ const Navbar = () => {
 
   const workspaceState = useAppSelector((state) => state.workspace);
   const currentWorkspace = useAppSelector((state) => state.workspace.current);
+  const isGuest = useAppSelector((state) => state.workspace.isGuest);
   const dispatch = useAppDispatch();
 
   const handleWorkspaceChange = async (id: string) => {
     if (currentWorkspace && id === currentWorkspace.id) return;
+
+    let workspaces = workspaceState.workspaces;
+    let selected = workspaceState.current;
 
     dispatch(
       setIsLoading({
@@ -46,25 +53,47 @@ const Navbar = () => {
       })
     );
 
-    const res = await fetch(`/api/workspace/${id}`);
-
-    if (!res) {
-      console.error('Failed loading workspace');
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed loading workspace',
-          type: 'error',
-        })
-      );
-      throw new Error('Failed loading workspace');
-    }
-
-    const { workspaces, selected } = await res.json();
-
-    dispatch(setWorkspaces(workspaces));
-    dispatch(setCurrentWorkspace(selected));
     setPopOverOpen(false);
+
+    if (isGuest) {
+      const workspace = workspaces.find((workspace) => workspace.id === id);
+
+      if (!workspace) {
+        console.error('Failed loading workspace');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed loading workspace',
+            type: 'error',
+          })
+        );
+        throw new Error('Failed loading workspace');
+      }
+
+      dispatch(setCurrentWorkspace(workspace));
+    } else {
+      const res = await fetch(`/api/workspace/${id}`);
+
+      if (!res) {
+        console.error('Failed loading workspace');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed loading workspace',
+            type: 'error',
+          })
+        );
+        throw new Error('Failed loading workspace');
+      }
+
+      const data = await res.json();
+
+      workspaces = data.workspaces;
+      selected = data.selected;
+
+      dispatch(setWorkspaces(workspaces));
+      dispatch(setCurrentWorkspace(selected));
+    }
 
     dispatch(
       setIsLoading({
@@ -88,36 +117,47 @@ const Navbar = () => {
         })
       );
 
-      const res = await fetch(`/api/workspace/${currentWorkspace.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          id: currentWorkspace?.id || '',
-          name: value,
-        }),
-      });
-
-      if (!res.ok) {
-        console.error('Failed updating workspace name');
+      if (isGuest) {
         dispatch(
-          setIsLoading({
-            value: false,
-            message: 'Failed updating workspace',
-            type: 'error',
+          updateWorkspaceName({
+            id: currentWorkspace.id,
+            name: value,
           })
         );
-        throw new Error('Failed updating workspace name');
-      }
+      } else {
+        const res = await fetch(`/api/workspace/${currentWorkspace.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            id: currentWorkspace?.id || '',
+            name: value,
+          }),
+        });
 
-      const updatedWorkspace = await res.json();
+        if (!res.ok) {
+          console.error('Failed updating workspace name');
+          dispatch(
+            setIsLoading({
+              value: false,
+              message: 'Failed updating workspace',
+              type: 'error',
+            })
+          );
+          throw new Error('Failed updating workspace name');
+        }
 
-      dispatch(
-        setWorkspaces(
-          workspaceState.workspaces.map((workspace) =>
-            workspace.id === updatedWorkspace.id ? updatedWorkspace : workspace
+        const updatedWorkspace = await res.json();
+
+        dispatch(
+          setWorkspaces(
+            workspaceState.workspaces.map((workspace) =>
+              workspace.id === updatedWorkspace.id
+                ? updatedWorkspace
+                : workspace
+            )
           )
-        )
-      );
-      dispatch(setCurrentWorkspace(updatedWorkspace));
+        );
+        dispatch(setCurrentWorkspace(updatedWorkspace));
+      }
 
       dispatch(
         setIsLoading({
@@ -140,29 +180,38 @@ const Navbar = () => {
       })
     );
 
-    const res = await fetch(`/api/workspace`, {
-      method: 'POST',
-      body: JSON.stringify({
-        name: 'New workspace',
-      }),
-    });
-
-    if (!res) {
-      console.error('Failed creating workspace');
+    if (isGuest) {
       dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed creating workspace',
-          type: 'error',
+        createWorkspace({
+          id: `workspace_${+new Date()}`,
+          name: 'New workspace',
         })
       );
-      throw new Error('Failed creating workspace');
+    } else {
+      const res = await fetch(`/api/workspace`, {
+        method: 'POST',
+        body: JSON.stringify({
+          name: 'New workspace',
+        }),
+      });
+
+      if (!res) {
+        console.error('Failed creating workspace');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed creating workspace',
+            type: 'error',
+          })
+        );
+        throw new Error('Failed creating workspace');
+      }
+
+      const { workspaces, selected } = await res.json();
+
+      dispatch(setWorkspaces(workspaces));
+      dispatch(setCurrentWorkspace(selected));
     }
-
-    const { workspaces, selected } = await res.json();
-
-    dispatch(setWorkspaces(workspaces));
-    dispatch(setCurrentWorkspace(selected));
 
     dispatch(
       setIsLoading({
@@ -182,37 +231,46 @@ const Navbar = () => {
       })
     );
 
-    const res = await fetch(`/api/group`, {
-      method: 'POST',
-      body: JSON.stringify({
-        workspaceId: currentWorkspace?.id,
-        name: 'New group',
-      }),
-    });
-
-    if (!res.ok) {
-      console.error('Failed creating group');
+    if (isGuest) {
       dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed creating group',
-          type: 'error',
+        createGroup({
+          id: `group_${+new Date()}`,
+          name: 'New group',
+        })
+      );
+    } else {
+      const res = await fetch(`/api/group`, {
+        method: 'POST',
+        body: JSON.stringify({
+          workspaceId: currentWorkspace?.id,
+          name: 'New group',
+        }),
+      });
+
+      if (!res.ok) {
+        console.error('Failed creating group');
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed creating group',
+            type: 'error',
+          })
+        );
+
+        throw new Error('Failed creating group');
+      }
+
+      const { group, workspace } = await res.json();
+
+      dispatch(
+        createGroup({
+          id: group.id,
+          name: group.name,
         })
       );
 
-      throw new Error('Failed creating group');
+      dispatch(setCurrentWorkspace(workspace));
     }
-
-    const { group, workspace } = await res.json();
-
-    dispatch(
-      createGroup({
-        id: group.id,
-        name: group.name,
-      })
-    );
-
-    dispatch(setCurrentWorkspace(workspace));
 
     dispatch(
       setIsLoading({
@@ -232,26 +290,30 @@ const Navbar = () => {
       })
     );
 
-    const res = await fetch(`/api/workspace/${id}`, {
-      method: 'DELETE',
-    });
+    if (isGuest) {
+      dispatch(deleteWorkspace(id));
+    } else {
+      const res = await fetch(`/api/workspace/${id}`, {
+        method: 'DELETE',
+      });
 
-    if (!res.ok) {
-      console.error('Failed deleting workspace', res);
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Failed deleting workspace',
-          type: 'error',
-        })
-      );
-      throw new Error('Failed deleting workspace');
+      if (!res.ok) {
+        console.error('Failed deleting workspace', res);
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Failed deleting workspace',
+            type: 'error',
+          })
+        );
+        throw new Error('Failed deleting workspace');
+      }
+
+      const { workspaces, selected } = await res.json();
+
+      dispatch(setWorkspaces(workspaces));
+      dispatch(setCurrentWorkspace(selected));
     }
-
-    const { workspaces, selected } = await res.json();
-
-    dispatch(setWorkspaces(workspaces));
-    dispatch(setCurrentWorkspace(selected));
 
     dispatch(
       setIsLoading({
@@ -271,6 +333,7 @@ const Navbar = () => {
               className='gap-2'
               variant='secondary'
               onClick={handleGroupCreate}
+              disabled={workspaceState.workspaces.length === 0}
             >
               <Plus size={16} /> Add group
             </Button>
@@ -361,7 +424,7 @@ const Navbar = () => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Button size='icon'>
-                <LogOut size={16} />
+                {isGuest ? <LogIn size={16} /> : <LogOut size={16} />}
               </Button>
             </NavigationMenuItem>
           </NavigationMenuList>
