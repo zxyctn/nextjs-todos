@@ -53,7 +53,7 @@ const NavbarMobile = () => {
     const res = await fetch(`/api/workspace/${id}`);
 
     if (!res) {
-      console.error('Failed to select workspace');
+      console.error('Failed loading workspace');
       dispatch(
         setIsLoading({
           value: false,
@@ -61,7 +61,7 @@ const NavbarMobile = () => {
           type: 'error',
         })
       );
-      throw new Error('Failed to select workspace');
+      throw new Error('Failed loading workspace');
     }
 
     const { workspaces, selected } = await res.json();
@@ -83,11 +83,13 @@ const NavbarMobile = () => {
     type: 'save' | 'cancel' | 'edit',
     value: string = ''
   ) => {
+    setIsRenaming(type === 'edit');
+
     if (type === 'save') {
       dispatch(
         setIsLoading({
           value: true,
-          message: 'Updating workspace...',
+          message: 'Updating workspace name...',
           type: 'success',
         })
       );
@@ -101,15 +103,15 @@ const NavbarMobile = () => {
       });
 
       if (!res.ok) {
-        console.error('Failed to update workspace name');
+        console.error('Failed updating workspace name');
         dispatch(
           setIsLoading({
             value: false,
-            message: 'Failed updating workspace',
+            message: 'Failed updating workspace name',
             type: 'error',
           })
         );
-        return;
+        throw new Error('Failed updating workspace name');
       }
 
       const updatedWorkspace = await res.json();
@@ -126,13 +128,11 @@ const NavbarMobile = () => {
       dispatch(
         setIsLoading({
           value: false,
-          message: 'Workspace updated successfully',
+          message: 'Workspace name updated successfully',
           type: 'success',
         })
       );
     }
-
-    setIsRenaming(type === 'edit');
   };
 
   const handleWorkspaceCreate = async () => {
@@ -152,7 +152,7 @@ const NavbarMobile = () => {
     });
 
     if (!res) {
-      console.error('Failed to create workspace');
+      console.error('Failed creating workspace');
       dispatch(
         setIsLoading({
           value: false,
@@ -160,7 +160,7 @@ const NavbarMobile = () => {
           type: 'error',
         })
       );
-      return;
+      throw new Error('Failed creating workspace');
     }
 
     const { workspaces, selected } = await res.json();
@@ -195,7 +195,7 @@ const NavbarMobile = () => {
     });
 
     if (!res.ok) {
-      console.error('Failed to create group');
+      console.error('Failed creating group');
       dispatch(
         setIsLoading({
           value: false,
@@ -203,7 +203,7 @@ const NavbarMobile = () => {
           type: 'error',
         })
       );
-      return;
+      throw new Error('Failed creating group');
     }
 
     const { group, workspace } = await res.json();
@@ -240,7 +240,7 @@ const NavbarMobile = () => {
     });
 
     if (!res.ok) {
-      console.error('Failed to delete workspace', res);
+      console.error('Failed deleting workspace', res);
       dispatch(
         setIsLoading({
           value: false,
@@ -248,7 +248,7 @@ const NavbarMobile = () => {
           type: 'error',
         })
       );
-      return;
+      throw new Error('Failed deleting workspace');
     }
 
     const { workspaces, selected } = await res.json();

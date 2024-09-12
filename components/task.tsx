@@ -58,6 +58,8 @@ const Task = ({
       method: 'DELETE',
     });
 
+    setIsDialogOpen(false);
+
     if (!res) {
       console.error('Failed deleting task');
       dispatch(
@@ -79,8 +81,6 @@ const Task = ({
         type: 'success',
       })
     );
-
-    setIsDialogOpen(false);
   };
 
   return (

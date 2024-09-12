@@ -80,7 +80,7 @@ const EditTask = ({
         })
       );
       setIsSaving(false);
-      return;
+      throw new Error('Failed updating task');
     }
 
     const { activity } = await res.json();

@@ -82,6 +82,16 @@ const AddTask = ({
       },
     });
 
+    dispatch(
+      setIsDragDisabled({
+        value: false,
+        sourceDroppableId: '',
+        destinationDroppableId: '',
+      })
+    );
+
+    setOpen(false);
+
     if (res.ok) {
       const { task, activity } = await res.json();
       setName(task.name);
@@ -107,6 +117,7 @@ const AddTask = ({
       );
     } else {
       console.error('Failed creating task');
+
       dispatch(
         setIsLoading({
           value: false,
@@ -114,17 +125,9 @@ const AddTask = ({
           type: 'error',
         })
       );
+
+      throw new Error('Failed creating task');
     }
-
-    dispatch(
-      setIsDragDisabled({
-        value: false,
-        sourceDroppableId: '',
-        destinationDroppableId: '',
-      })
-    );
-
-    setOpen(false);
   };
 
   const handleDialogOpenChange = (isOpen: boolean) => {

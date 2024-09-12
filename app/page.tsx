@@ -33,8 +33,8 @@ const Home = () => {
     const res = await fetch('/api/workspace');
 
     if (!res) {
-      console.error('Failed to fetch workspaces');
-      throw new Error('Failed to fetch workspaces');
+      console.error('Failed fetching workspaces');
+      throw new Error('Failed fetching workspaces');
     }
 
     const { workspaces, selected } = await res.json();

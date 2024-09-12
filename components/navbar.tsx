@@ -49,7 +49,7 @@ const Navbar = () => {
     const res = await fetch(`/api/workspace/${id}`);
 
     if (!res) {
-      console.error('Failed to select workspace');
+      console.error('Failed loading workspace');
       dispatch(
         setIsLoading({
           value: false,
@@ -57,7 +57,7 @@ const Navbar = () => {
           type: 'error',
         })
       );
-      throw new Error('Failed to select workspace');
+      throw new Error('Failed loading workspace');
     }
 
     const { workspaces, selected } = await res.json();
@@ -97,7 +97,7 @@ const Navbar = () => {
       });
 
       if (!res.ok) {
-        console.error('Failed to update workspace name');
+        console.error('Failed updating workspace name');
         dispatch(
           setIsLoading({
             value: false,
@@ -105,7 +105,7 @@ const Navbar = () => {
             type: 'error',
           })
         );
-        return;
+        throw new Error('Failed updating workspace name');
       }
 
       const updatedWorkspace = await res.json();
@@ -148,7 +148,7 @@ const Navbar = () => {
     });
 
     if (!res) {
-      console.error('Failed to create workspace');
+      console.error('Failed creating workspace');
       dispatch(
         setIsLoading({
           value: false,
@@ -156,7 +156,7 @@ const Navbar = () => {
           type: 'error',
         })
       );
-      return;
+      throw new Error('Failed creating workspace');
     }
 
     const { workspaces, selected } = await res.json();
@@ -191,7 +191,7 @@ const Navbar = () => {
     });
 
     if (!res.ok) {
-      console.error('Failed to create group');
+      console.error('Failed creating group');
       dispatch(
         setIsLoading({
           value: false,
@@ -199,7 +199,8 @@ const Navbar = () => {
           type: 'error',
         })
       );
-      return;
+
+      throw new Error('Failed creating group');
     }
 
     const { group, workspace } = await res.json();
@@ -236,7 +237,7 @@ const Navbar = () => {
     });
 
     if (!res.ok) {
-      console.error('Failed to delete workspace', res);
+      console.error('Failed deleting workspace', res);
       dispatch(
         setIsLoading({
           value: false,
@@ -244,7 +245,7 @@ const Navbar = () => {
           type: 'error',
         })
       );
-      return;
+      throw new Error('Failed deleting workspace');
     }
 
     const { workspaces, selected } = await res.json();

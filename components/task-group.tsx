@@ -43,6 +43,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
     type: 'save' | 'cancel' | 'edit',
     value: string = ''
   ) => {
+    setIsRenaming(type === 'edit');
     if (type === 'save') {
       const currentGroupName = currentGroup.name;
 
@@ -69,6 +70,14 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
         body: JSON.stringify({ name: value }),
       });
 
+      dispatch(
+        setIsDragDisabled({
+          value: false,
+          sourceDroppableId: '',
+          destinationDroppableId: '',
+        })
+      );
+
       if (!res.ok) {
         console.error('Failed updating group name');
         dispatch(
@@ -79,6 +88,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
           })
         );
         dispatch(updateGroupName({ id: groupId, name: currentGroupName }));
+        throw new Error('Failed updating group name');
       } else {
         dispatch(
           setIsLoading({
@@ -88,17 +98,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
           })
         );
       }
-
-      dispatch(
-        setIsDragDisabled({
-          value: false,
-          sourceDroppableId: '',
-          destinationDroppableId: '',
-        })
-      );
     }
-
-    setIsRenaming(type === 'edit');
   };
 
   const handleGroupDelete = async () => {
@@ -122,6 +122,14 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
       method: 'DELETE',
     });
 
+    dispatch(
+      setIsDragDisabled({
+        value: false,
+        sourceDroppableId: '',
+        destinationDroppableId: '',
+      })
+    );
+
     if (!res.ok) {
       console.error('Failed deleting group');
 
@@ -132,6 +140,8 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
           type: 'error',
         })
       );
+
+      throw new Error('Failed deleting group');
     } else {
       dispatch(deleteGroup(groupId));
       dispatch(
@@ -142,14 +152,6 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
         })
       );
     }
-
-    dispatch(
-      setIsDragDisabled({
-        value: false,
-        sourceDroppableId: '',
-        destinationDroppableId: '',
-      })
-    );
   };
 
   return (
