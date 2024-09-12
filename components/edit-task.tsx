@@ -92,6 +92,7 @@ const EditTask = ({
           description,
           activityId: activity.id,
           activityContent: activity.content,
+          activityCreatedAt: activity.createdAt,
         })
       );
     }
