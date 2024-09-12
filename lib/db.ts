@@ -559,21 +559,27 @@ export const moveTask = async (id: string, index: number, groupId: string) => {
       throw new Error(`Task could not be moved`);
     }
 
-    const activity = await prisma.activity.create({
-      data: {
-        taskId: id,
-        content: `Task moved to group ${updated.group.name}`,
-      },
-    });
+    if (oldGroup.id !== groupId) {
+      const activity = await prisma.activity.create({
+        data: {
+          taskId: id,
+          content: `Task moved to group ${updated.group.name}`,
+        },
+      });
 
-    if (!activity) {
-      throw new Error(`Task activity could not be created`);
+      if (!activity) {
+        throw new Error(`Task activity could not be created`);
+      }
+
+      return {
+        task,
+        activity,
+      };
+    } else {
+      return {
+        task,
+      };
     }
-
-    return {
-      task,
-      activity,
-    };
   } else {
     throw new Error(`Task ${id} could not be updated`);
   }

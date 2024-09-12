@@ -59,6 +59,8 @@ const Home = () => {
       const dInd = destination.droppableId.split('-')[1];
       const taskId = result.draggableId.split('-')[1];
 
+      if (sInd === dInd && source.index === destination.index) return;
+
       dispatch(
         setIsDragDisabled({
           value: true,
@@ -120,15 +122,25 @@ const Home = () => {
 
       const { task, activity } = await res.json();
 
-      dispatch(
-        updateTaskContent({
-          taskId: task.id,
-          name: task.name,
-          description: task.description,
-          activityId: activity.id,
-          activityContent: activity.content,
-        })
-      );
+      if (activity) {
+        dispatch(
+          updateTaskContent({
+            taskId: task.id,
+            name: task.name,
+            description: task.description,
+            activityId: activity.id,
+            activityContent: activity.content,
+          })
+        );
+      } else {
+        dispatch(
+          updateTaskContent({
+            taskId: task.id,
+            name: task.name,
+            description: task.description,
+          })
+        );
+      }
 
       dispatch(
         setIsDragDisabled({
@@ -146,6 +158,8 @@ const Home = () => {
         })
       );
     } else {
+      if (source.index === destination.index) return;
+
       const groupId = result.draggableId.split('-')[1];
 
       dispatch(
