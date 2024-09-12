@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { Waves } from 'lucide-react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
@@ -409,10 +409,18 @@ const Home = () => {
         </DragDropContext>
       </div>
 
-      {workspaceState.current.groups.length === 0 && (
+      {workspaceState.current.groups.length === 0 &&
+        workspaceState.workspaces.length > 0 && (
+          <div className='fixed flex flex-col gap-2 items-center justify-center text-muted-foreground h-full w-full'>
+            <Waves />
+            <span className='text-xs'>No groups in this workspace</span>
+          </div>
+        )}
+
+      {workspaceState.workspaces.length === 0 && (
         <div className='fixed flex flex-col gap-2 items-center justify-center text-muted-foreground h-full w-full'>
           <Waves />
-          <span className='text-xs'>No groups in this workspace</span>
+          <span className='text-xs'>No workspaces</span>
         </div>
       )}
     </div>

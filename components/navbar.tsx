@@ -339,7 +339,7 @@ const Navbar = () => {
             </Button>
           </NavigationMenuItem>
 
-          {currentWorkspace && (
+          {currentWorkspace && workspaceState.workspaces.length > 0 && (
             <NavigationMenuItem className='flex items-center gap-4 grow sm:grow-0'>
               <TitleEditor
                 name={currentWorkspace.name}
@@ -416,6 +416,14 @@ const Navbar = () => {
                 </Popover>
               )}
             </NavigationMenuItem>
+          )}
+
+          {workspaceState.workspaces.length === 0 && (
+            <Button onClick={handleWorkspaceCreate}>
+              <div className='flex gap-2 items-center'>
+                <PlusIcon size={16} /> Create new workspace
+              </div>
+            </Button>
           )}
 
           <NavigationMenuList className='sm:gap-2 items-center hidden sm:flex'>
