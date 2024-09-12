@@ -52,7 +52,7 @@ const initialState: {
     message: '',
     type: 'success',
   },
-  isGuest: true,
+  isGuest: false,
 };
 
 const lsWorkspaces = localStorage.getItem('workspaces');
