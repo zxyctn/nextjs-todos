@@ -348,31 +348,38 @@ export const workspaceSlice = createSlice({
         taskId: string;
         name: string;
         description: string;
-        activityId: string;
-        activityContent: string;
+        activityId?: string;
+        activityContent?: string;
+        activityCreatedAt?: Date;
       }>
     ) => {
-      const newGroups = state.current.groups.map((group) => ({
-        ...group,
-        tasks: group.tasks.map((task) =>
-          task.id === action.payload.taskId
+      const newGroups = state.current.groups.map((group) => {
+        const activity =
+          action.payload.activityId && action.payload.activityContent
             ? {
-                ...task,
-                name: action.payload.name,
-                description: action.payload.description,
-                activities: [
-                  ...task.activities,
-                  {
-                    id: action.payload.activityId,
-                    content: action.payload.activityContent,
-                    createdAt: new Date(),
-                    taskId: action.payload.taskId,
-                  },
-                ],
+                id: action.payload.activityId,
+                content: action.payload.activityContent,
+                createdAt: action.payload.activityCreatedAt || new Date(),
+                taskId: action.payload.taskId,
               }
-            : task
-        ),
-      }));
+            : undefined;
+
+        return {
+          ...group,
+          tasks: group.tasks.map((task) =>
+            task.id === action.payload.taskId
+              ? {
+                  ...task,
+                  name: action.payload.name,
+                  description: action.payload.description,
+                  activities: activity
+                    ? [...task.activities, activity]
+                    : task.activities,
+                }
+              : task
+          ),
+        };
+      });
 
       state.workspaces = state.workspaces.map((w) =>
         w.id === state.current.id
