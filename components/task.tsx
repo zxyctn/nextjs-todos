@@ -104,11 +104,17 @@ const Task = ({
           >
             <CardHeader
               onClick={() => handleDialogOpenChange(true)}
-              className='cursor-pointer px-6 pb-0'
+              className='cursor-pointer px-4 pb-0 pt-4 max-h-24'
             >
-              <CardTitle>{task.name}</CardTitle>
-              <CardDescription className='relative h-16 overflow-hidden'>
-                <p>{task.description}</p>
+              <CardTitle className='text-base font-medium'>
+                {task.name}
+              </CardTitle>
+              <CardDescription
+                className={cn('relative overflow-hidden', {
+                  'h-12': task.description,
+                })}
+              >
+                <p className='text-sm'>{task.description}</p>
                 <div className='absolute inset-x-0 bottom-0 h-6 bg-gradient-to-t from-secondary to-transparent' />
               </CardDescription>
             </CardHeader>

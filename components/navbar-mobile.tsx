@@ -335,7 +335,9 @@ const NavbarMobile = () => {
       const { clientX: x, clientY: y } = e;
       // Check if the click is outside the navbar boundaries
       if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-        setIsMenuOpen(false); // Collapse navbar
+        setTimeout(() => {
+          setIsMenuOpen(false); // Collapse navbar
+        }, 300);
       }
     }
   };
@@ -359,7 +361,7 @@ const NavbarMobile = () => {
     >
       <div
         className={cn(
-          'border border-input rounded-lg w-full grow p-2 flex flex-col',
+          'bg-primary/10 backdrop-blur-lg rounded-lg w-full grow p-2 flex flex-col',
           { 'gap-2': isMenuOpen }
         )}
       >
@@ -390,7 +392,7 @@ const NavbarMobile = () => {
           </NavigationMenuList>
         </NavigationMenuList>
         <Separator
-          className={cn('my-2', {
+          className={cn('my-2 bg-primary/5', {
             hidden: !isMenuOpen,
           })}
         />

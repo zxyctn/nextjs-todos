@@ -325,9 +325,9 @@ const Navbar = () => {
   };
 
   return (
-    <NavigationMenu className='fixed bottom-0 w-full sm:flex hidden justify-center'>
-      <div className='grow max-w-[1400px]'>
-        <NavigationMenuList className='gap-2 border border-input p-2 m-2 rounded-lg justify-between items-center'>
+    <NavigationMenu className='fixed bottom-0 max-w-[1000px] w-full sm:flex hidden justify-center'>
+      <div className='grow w-full'>
+        <NavigationMenuList className='gap-2 bg-primary/10 backdrop-blur-lg p-2 m-2 rounded-lg justify-between items-center'>
           <NavigationMenuItem className='sm:gap-2 items-center hidden sm:flex'>
             <Button
               className='gap-2'

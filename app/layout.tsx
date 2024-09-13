@@ -29,7 +29,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <div className='w-full flex justify-center min-h-screen'>
-            <div className='max-w-[1400px] overflow-auto mt-4 sm:mt-8 mb-0'>
+            <div className='max-w-[1400px] overflow-auto mt-4 sm:mt-8 mb-20'>
               <div className='w-fit'>{children}</div>
             </div>
             <Navbar />
