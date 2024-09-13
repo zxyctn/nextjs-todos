@@ -142,6 +142,9 @@ const AddTask = ({
       setOpen(false);
     }
 
+    setName('Untitled');
+    setDescription('');
+
     dispatch(
       setIsLoading({
         value: false,
@@ -153,6 +156,11 @@ const AddTask = ({
 
   const handleDialogOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
+
+    if (!isOpen) {
+      setName('Untitled');
+      setDescription('');
+    }
   };
 
   return (
