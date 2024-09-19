@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
 import './globals.css';
 
 import Navbar from '@/components/navbar';
@@ -43,6 +44,7 @@ export default async function RootLayout({
             <Toaster richColors position='top-right' />
           </ThemeProvider>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
