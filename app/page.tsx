@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Waves } from 'lucide-react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
@@ -18,39 +20,49 @@ import {
   setIsLoading,
   setWorkspaces,
   updateTaskContent,
-  WorkspaceWithOrderedGroups,
 } from '@/store/workspaceSlice';
-import { WorkspaceWithGroups } from '@/lib/prisma';
+import { setIsGuest, setUser } from '@/store/authSlice';
 
 const Home = () => {
   const workspaceState = useAppSelector((state) => state.workspace);
   const currentWorkspace = useAppSelector((state) => state.workspace.current);
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
+  const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const isLoading = useAppSelector((state) => state.workspace.isLoading);
   const isDragDisabled = useAppSelector(
     (state) => state.workspace.isDragDisabled.value
   );
 
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (session) {
+      dispatch(setUser(session.user));
+      dispatch(setIsGuest(false));
+    } else {
+      dispatch(setUser(null));
+      if (isGuest === false) {
+        router.push('/login');
+      }
+    }
+  }, [session]);
+
   const fetchWorkspaces = async () => {
     if (isGuest) {
-      const lsWorkspaces = localStorage.getItem('workspaces');
-      const lsCurrent = localStorage.getItem('current');
-      const workspaces = lsWorkspaces ? JSON.parse(lsWorkspaces) : [];
-      const current = lsCurrent
-        ? JSON.parse(lsCurrent)
-        : {
-            id: '',
-            name: '',
-            groupOrder: [],
-            groups: [],
-            selected: true,
-            userId: '',
-            orderedGroups: [],
-          };
-      dispatch(setWorkspaces(workspaces));
-      dispatch(setCurrentWorkspace(current));
+      dispatch(setWorkspaces([]));
+      dispatch(
+        setCurrentWorkspace({
+          id: '',
+          name: '',
+          groupOrder: [],
+          groups: [],
+          selected: true,
+          userId: '',
+        })
+      );
     } else {
       const res = await fetch('/api/workspace');
 
@@ -181,8 +193,6 @@ const Home = () => {
             destinationDroppableId: '',
           })
         );
-
-        console.log(taskId, dInd);
 
         const task = workspaceState.current.groups
           .find((group) => group.id === sInd)
@@ -346,39 +356,31 @@ const Home = () => {
   }, [isLoading, isDragDisabled]);
 
   useEffect(() => {
-    const init = async () => {
-      dispatch(
-        setIsLoading({
-          value: true,
-          message: 'Fetching workspaces...',
-          type: 'success',
-        })
-      );
-      await fetchWorkspaces();
-      dispatch(
-        setIsLoading({
-          value: false,
-          message: 'Fetched workspaces successfully',
-          type: 'success',
-        })
-      );
-    };
+    if (status !== 'loading' && (user || isGuest)) {
+      const init = async () => {
+        dispatch(
+          setIsLoading({
+            value: true,
+            message: 'Fetching workspaces...',
+            type: 'success',
+          })
+        );
+        await fetchWorkspaces();
+        dispatch(
+          setIsLoading({
+            value: false,
+            message: 'Fetched workspaces successfully',
+            type: 'success',
+          })
+        );
+      };
 
-    init();
-  }, []);
-
-  useEffect(() => {
-    if (isGuest && typeof window !== 'undefined') {
-      localStorage.setItem(
-        'workspaces',
-        JSON.stringify(workspaceState.workspaces)
-      );
-      localStorage.setItem('current', JSON.stringify(workspaceState.current));
+      init();
     }
-  }, [workspaceState.workspaces, workspaceState.current, dispatch]);
+  }, [status, user, isGuest]);
 
   return (
-    <div className='flex justify-center grow'>
+    <div className='flex justify-center pb-20 pt-4 sm:pt-8'>
       <div className='grow'>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable
@@ -427,7 +429,9 @@ const Home = () => {
 const HomeWrapper = () => {
   return (
     <ReduxProvider>
-      <Home />
+      <div className='w-fit'>
+        <Home />
+      </div>
     </ReduxProvider>
   );
 };
