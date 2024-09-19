@@ -32,15 +32,217 @@ const initialState: {
   };
 } = {
   current: {
-    id: '',
-    name: '',
-    groupOrder: [],
-    groups: [],
+    id: '1',
+    name: '💼 Work',
+    groupOrder: ['11', '12', '13'],
+    groups: [
+      {
+        id: '11',
+        name: '📋 To do',
+        taskOrder: ['111', '112'],
+        tasks: [
+          {
+            id: '111',
+            name: '🚀 Create a new project',
+            description: 'Create a new project with Next.js',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1111',
+                content: 'Create a new project with Next.js',
+                createdAt: new Date(),
+                taskId: '111',
+              },
+            ],
+          },
+          {
+            id: '112',
+            name: '🚀 Add Tailwind CSS',
+            description: 'Add Tailwind CSS to the project',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1121',
+                content: 'Add Tailwind CSS to the project',
+                createdAt: new Date(),
+                taskId: '112',
+              },
+            ],
+          },
+        ],
+        workspaceId: '1',
+      },
+      {
+        id: '12',
+        name: '🚀 In progress',
+        taskOrder: [],
+        tasks: [],
+        workspaceId: '1',
+      },
+      {
+        id: '13',
+        name: '🎉 Done',
+        taskOrder: [],
+        tasks: [],
+        workspaceId: '1',
+      },
+    ],
     selected: true,
     userId: '',
-    orderedGroups: [],
+    orderedGroups: [
+      {
+        id: '11',
+        name: '📋 To do',
+        taskOrder: ['111', '112'],
+        tasks: [
+          {
+            id: '111',
+            name: '🚀 Create a new project',
+            description: 'Create a new project with Next.js',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1111',
+                content: 'Create a new project with Next.js',
+                createdAt: new Date(),
+                taskId: '111',
+              },
+            ],
+          },
+          {
+            id: '112',
+            name: '🚀 Add Tailwind CSS',
+            description: 'Add Tailwind CSS to the project',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1121',
+                content: 'Add Tailwind CSS to the project',
+                createdAt: new Date(),
+                taskId: '112',
+              },
+            ],
+          },
+        ],
+        orderedTasks: [
+          {
+            id: '111',
+            name: '🚀 Create a new project',
+            description: 'Create a new project with Next.js',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1111',
+                content: 'Create a new project with Next.js',
+                createdAt: new Date(),
+                taskId: '111',
+              },
+            ],
+          },
+          {
+            id: '112',
+            name: '🚀 Add Tailwind CSS',
+            description: 'Add Tailwind CSS to the project',
+            groupId: '1',
+            createdAt: new Date(),
+            activities: [
+              {
+                id: '1121',
+                content: 'Add Tailwind CSS to the project',
+                createdAt: new Date(),
+                taskId: '112',
+              },
+            ],
+          },
+        ],
+        workspaceId: '1',
+      },
+      {
+        id: '12',
+        name: '🚀 In progress',
+        taskOrder: [],
+        tasks: [],
+        workspaceId: '1',
+        orderedTasks: [],
+      },
+      {
+        id: '13',
+        name: '🎉 Done',
+        taskOrder: [],
+        tasks: [],
+        workspaceId: '1',
+        orderedTasks: [],
+      },
+    ],
   },
-  workspaces: [],
+  workspaces: [
+    {
+      id: '1',
+      name: '💼 Work',
+      groupOrder: ['1', '2', '3'],
+      groups: [
+        {
+          id: '11',
+          name: '📋 To do',
+          taskOrder: ['111', '112'],
+          tasks: [
+            {
+              id: '111',
+              name: '🚀 Create a new project',
+              description: 'Create a new project with Next.js',
+              groupId: '1',
+              createdAt: new Date(),
+              activities: [
+                {
+                  id: '1111',
+                  content: 'Create a new project with Next.js',
+                  createdAt: new Date(),
+                  taskId: '111',
+                },
+              ],
+            },
+            {
+              id: '112',
+              name: '🚀 Add Tailwind CSS',
+              description: 'Add Tailwind CSS to the project',
+              groupId: '1',
+              createdAt: new Date(),
+              activities: [
+                {
+                  id: '1121',
+                  content: 'Add Tailwind CSS to the project',
+                  createdAt: new Date(),
+                  taskId: '112',
+                },
+              ],
+            },
+          ],
+          workspaceId: '1',
+        },
+        {
+          id: '12',
+          name: '🚀 In progress',
+          taskOrder: [],
+          tasks: [],
+          workspaceId: '1',
+        },
+        {
+          id: '13',
+          name: '🎉 Done',
+          taskOrder: [],
+          tasks: [],
+          workspaceId: '1',
+        },
+      ],
+      selected: true,
+      userId: '',
+    },
+  ],
   isDragDisabled: {
     value: false,
     sourceDroppableId: '',
