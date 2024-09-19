@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch, TypedUseSelectorHook, useSelector } from 'react-redux';
+
 import { workspaceReducer } from '@/store/workspaceSlice';
+import { authReducer } from '@/store/authSlice';
 
 export const store = configureStore({
-  reducer: { workspace: workspaceReducer },
+  reducer: { workspace: workspaceReducer, auth: authReducer },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
 });

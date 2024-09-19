@@ -30,7 +30,6 @@ const initialState: {
     message: string;
     type: 'success' | 'error';
   };
-  isGuest: boolean;
 } = {
   current: {
     id: '',
@@ -52,35 +51,35 @@ const initialState: {
     message: '',
     type: 'success',
   },
-  isGuest: false,
 };
-
-if (typeof window !== 'undefined') {
-  const lsWorkspaces = localStorage.getItem('workspaces');
-  const lsCurrent = localStorage.getItem('current');
-
-  if (lsWorkspaces) {
-    initialState.workspaces = JSON.parse(lsWorkspaces);
-  }
-  if (lsCurrent) {
-    initialState.current = getCurrentWorkspace(JSON.parse(lsCurrent));
-  }
-}
 
 export const workspaceSlice = createSlice({
   name: 'workspace',
   initialState,
   reducers: {
     // WORKSPACE
-    setWorkspaces: (state, action: PayloadAction<WorkspaceWithGroups[]>) => {
-      state.workspaces = action.payload;
+    setWorkspaces: (
+      state,
+      action: PayloadAction<WorkspaceWithGroups[] | null>
+    ) => {
+      state.workspaces = action.payload || [];
     },
 
     setCurrentWorkspace: (
       state,
-      action: PayloadAction<WorkspaceWithGroups>
+      action: PayloadAction<WorkspaceWithGroups | null>
     ) => {
-      state.current = getCurrentWorkspace(action.payload);
+      state.current = action.payload
+        ? getCurrentWorkspace(action.payload)
+        : {
+            id: '',
+            name: '',
+            groupOrder: [],
+            groups: [],
+            selected: false,
+            userId: '',
+            orderedGroups: [],
+          };
       state.workspaces = state.workspaces.map((w) => ({
         ...w,
         selected: w.id === state.current.id,
