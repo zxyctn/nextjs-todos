@@ -5,6 +5,8 @@ import './globals.css';
 import Navbar from '@/components/navbar';
 import NavbarMobile from '@/components/navbar-mobile';
 import ThemeProvider from '@/components/theme-provider';
+import Providers from '@/components/providers';
+import { getSession } from '@/auth';
 import { Toaster } from '@/components/ui/sonner';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -19,25 +21,28 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+
   return (
     <html lang='en' suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className='w-full flex justify-center min-h-screen'>
-            <div className='max-w-[1400px] overflow-auto mt-4 sm:mt-8 mb-20'>
-              <div className='w-fit'>{children}</div>
+        <Providers session={session}>
+          <ThemeProvider
+            attribute='class'
+            defaultTheme='system'
+            enableSystem
+            disableTransitionOnChange
+          >
+            <div className='flex justify-center h-screen w-screen'>
+              <div className='max-w-[1400px] overflow-auto flex grow'>
+                <div className='w-full flex justify-center'>{children}</div>
+              </div>
+              <Navbar />
+              <NavbarMobile />
             </div>
-            <Navbar />
-            <NavbarMobile />
-          </div>
-
-          <Toaster richColors position="top-right" />
-        </ThemeProvider>
+            <Toaster richColors position='top-right' />
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
