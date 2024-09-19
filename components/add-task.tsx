@@ -35,7 +35,7 @@ const AddTask = ({
   const [description, setDescription] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
   const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

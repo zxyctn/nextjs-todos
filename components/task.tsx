@@ -31,7 +31,7 @@ const Task = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
 
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
   const isDragDisabled = useAppSelector(
     (state) => state.workspace.isDragDisabled.value
   );

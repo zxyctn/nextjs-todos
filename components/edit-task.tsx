@@ -40,7 +40,7 @@ const EditTask = ({
   const [description, setDescription] = useState(task.description || '');
   const [isSaving, setIsSaving] = useState(false);
 
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
   const dispatch = useAppDispatch();
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

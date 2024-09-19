@@ -25,7 +25,7 @@ const TaskGroup = ({ groupId, index }: { groupId: string; index: number }) => {
   const [mouseOver, setMouseOver] = useState(false);
 
   const dispatch = useAppDispatch();
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
 
   const currentGroup = useAppSelector((state) =>
     state.workspace.current.orderedGroups.find((g) => g.id === groupId)
