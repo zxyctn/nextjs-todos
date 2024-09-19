@@ -35,8 +35,8 @@ export default async function RootLayout({
             disableTransitionOnChange
           >
             <div className='flex justify-center h-screen w-screen'>
-              <div className='max-w-[1400px] overflow-auto flex grow'>
-                <div className='flex justify-center'>{children}</div>
+              <div className='max-w-[1400px] overflow-auto'>
+                <div className='w-fit'>{children}</div>
               </div>
               <Navbar />
               <NavbarMobile />

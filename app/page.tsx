@@ -421,9 +421,7 @@ const Home = () => {
 const HomeWrapper = () => {
   return (
     <ReduxProvider>
-      <div className='w-fit'>
-        <Home />
-      </div>
+      <Home />
     </ReduxProvider>
   );
 };
