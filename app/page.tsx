@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Waves } from 'lucide-react';
+import { Loader2, Waves } from 'lucide-react';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 
@@ -51,19 +51,7 @@ const Home = () => {
   }, [session]);
 
   const fetchWorkspaces = async () => {
-    if (isGuest) {
-      dispatch(setWorkspaces([]));
-      dispatch(
-        setCurrentWorkspace({
-          id: '',
-          name: '',
-          groupOrder: [],
-          groups: [],
-          selected: true,
-          userId: '',
-        })
-      );
-    } else {
+    if (!isGuest) {
       const res = await fetch('/api/workspace');
 
       if (!res) {
@@ -379,7 +367,11 @@ const Home = () => {
     }
   }, [user, isGuest]);
 
-  return (
+  return !isGuest && !user ? (
+    <div className='fixed top-0 left-0 w-screen h-screen flex items-center justify-center'>
+      <Loader2 size={24} className='animate-spin' />
+    </div>
+  ) : (
     <div className='flex justify-center pb-20 pt-4 sm:pt-8'>
       <div className='grow'>
         <DragDropContext onDragEnd={handleDragEnd}>
