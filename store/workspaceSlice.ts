@@ -50,7 +50,7 @@ const initialState: {
             activities: [
               {
                 id: '1111',
-                content: 'Create a new project with Next.js',
+                content: 'Task created in group 📋 To do',
                 createdAt: new Date(),
                 taskId: '111',
               },
@@ -65,7 +65,7 @@ const initialState: {
             activities: [
               {
                 id: '1121',
-                content: 'Add Tailwind CSS to the project',
+                content: 'Task created in group 📋 To do',
                 createdAt: new Date(),
                 taskId: '112',
               },
@@ -106,7 +106,7 @@ const initialState: {
             activities: [
               {
                 id: '1111',
-                content: 'Create a new project with Next.js',
+                content: 'Task created in group 📋 To do',
                 createdAt: new Date(),
                 taskId: '111',
               },
@@ -138,7 +138,7 @@ const initialState: {
             activities: [
               {
                 id: '1111',
-                content: 'Create a new project with Next.js',
+                content: 'Task created in group 📋 To do',
                 createdAt: new Date(),
                 taskId: '111',
               },
@@ -153,7 +153,7 @@ const initialState: {
             activities: [
               {
                 id: '1121',
-                content: 'Add Tailwind CSS to the project',
+                content: 'Task created in group 📋 To do',
                 createdAt: new Date(),
                 taskId: '112',
               },
