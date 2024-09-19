@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
 
 import ReduxProvider from '@/store/redux-provider';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,7 @@ import { setIsGuest } from '@/store/authSlice';
 import { setIsLoading } from '@/store/workspaceSlice';
 
 const Login = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const router = useRouter();
 
   const dispatch = useAppDispatch();
@@ -49,18 +48,8 @@ const Login = () => {
     }
   }, [session]);
 
-  return status === 'loading' ? (
-    <div className='flex items-center justify-center grow'>
-      <div className='h-min gap-2 flex flex-col w-full max-w-96 px-2'>
-        <Button disabled>
-          <div className='flex items-center justify-center'>
-            <Loader2 size={16} className='animate-spin' />
-          </div>
-        </Button>
-      </div>
-    </div>
-  ) : (
-    <div className='flex items-center justify-center h-full w-full'>
+  return (
+    <div className='fixed top-0 left-0 flex items-center justify-center w-screen h-screen'>
       <div className='h-min gap-2 flex flex-col w-full max-w-96 px-2'>
         <Button onClick={handleLogin}>
           <span>
