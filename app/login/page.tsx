@@ -1,7 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 
 import ReduxProvider from '@/store/redux-provider';
@@ -36,10 +37,17 @@ const Login = () => {
     );
   };
 
-  const handleGuest = () => {
+  const handleGuest = async () => {
     dispatch(setIsGuest(true));
     router.push('/');
   };
+
+  useEffect(() => {
+    if (session) {
+      dispatch(setIsGuest(false));
+      router.push('/');
+    }
+  }, [session]);
 
   return status === 'loading' ? (
     <div className='flex items-center justify-center grow'>
@@ -51,7 +59,7 @@ const Login = () => {
         </Button>
       </div>
     </div>
-  ) : !session ? (
+  ) : (
     <div className='flex items-center justify-center h-full w-full'>
       <div className='h-min gap-2 flex flex-col w-full max-w-96 px-2'>
         <Button onClick={handleLogin}>
@@ -68,8 +76,6 @@ const Login = () => {
         </Button>
       </div>
     </div>
-  ) : (
-    (redirect('/'), null)
   );
 };
 

@@ -36,7 +36,7 @@ const Home = () => {
     (state) => state.workspace.isDragDisabled.value
   );
 
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
 
   useEffect(() => {
     if (session) {
@@ -356,7 +356,7 @@ const Home = () => {
   }, [isLoading, isDragDisabled]);
 
   useEffect(() => {
-    if (status !== 'loading' && (user || isGuest)) {
+    if (user || isGuest) {
       const init = async () => {
         dispatch(
           setIsLoading({
@@ -377,7 +377,7 @@ const Home = () => {
 
       init();
     }
-  }, [status, user, isGuest]);
+  }, [user, isGuest]);
 
   return (
     <div className='flex justify-center pb-20 pt-4 sm:pt-8'>
