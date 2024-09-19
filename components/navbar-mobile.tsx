@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronUp, LogOut, Menu, Plus, PlusIcon, Trash } from 'lucide-react';
+import { ChevronUp, Menu, Plus, PlusIcon, Trash } from 'lucide-react';
 
+import ReduxProvider from '@/store/redux-provider';
 import TitleEditor from '@/components/title-editor';
 import Confirm from '@/components/confirm';
+import AuthButton from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { LightSwitch } from '@/components/light-switch';
 import { Separator } from '@/components/ui/separator';
@@ -29,7 +31,6 @@ import {
   setWorkspaces,
   updateWorkspaceName,
 } from '@/store/workspaceSlice';
-import ReduxProvider from '@/store/redux-provider';
 
 const NavbarMobile = () => {
   const [popOverOpen, setPopOverOpen] = useState(false);
@@ -38,7 +39,8 @@ const NavbarMobile = () => {
 
   const workspaceState = useAppSelector((state) => state.workspace);
   const currentWorkspace = useAppSelector((state) => state.workspace.current);
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
+  const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
 
   const navRef = useRef(null);
@@ -357,11 +359,16 @@ const NavbarMobile = () => {
   return (
     <NavigationMenu
       ref={navRef}
-      className='fixed bottom-0 w-full flex flex-col sm:hidden justify-center transition-all p-2 m-2'
+      className={cn(
+        'fixed bottom-0 w-full flex flex-col sm:hidden justify-center transition-all p-2 m-2',
+        {
+          hidden: !user && !isGuest,
+        }
+      )}
     >
       <div
         className={cn(
-          'bg-primary/10 backdrop-blur-lg rounded-lg w-full grow p-2 flex flex-col',
+          'bg-background border border-input rounded-lg w-full grow p-2 flex flex-col',
           { 'gap-2': isMenuOpen }
         )}
       >
@@ -385,9 +392,7 @@ const NavbarMobile = () => {
               <LightSwitch />
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Button size='icon'>
-                <LogOut size={16} />
-              </Button>
+              <AuthButton />
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenuList>

@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronUp, LogIn, LogOut, Plus, PlusIcon, Trash } from 'lucide-react';
+import { ChevronUp, Plus, Trash } from 'lucide-react';
 
+import ReduxProvider from '@/store/redux-provider';
 import TitleEditor from '@/components/title-editor';
 import Confirm from '@/components/confirm';
+import AuthButton from '@/components/auth-button';
 import { cn } from '@/lib/utils';
 import { LightSwitch } from '@/components/light-switch';
 import {
@@ -28,7 +30,6 @@ import {
   setWorkspaces,
   updateWorkspaceName,
 } from '@/store/workspaceSlice';
-import ReduxProvider from '@/store/redux-provider';
 
 const Navbar = () => {
   const [popOverOpen, setPopOverOpen] = useState(false);
@@ -36,7 +37,8 @@ const Navbar = () => {
 
   const workspaceState = useAppSelector((state) => state.workspace);
   const currentWorkspace = useAppSelector((state) => state.workspace.current);
-  const isGuest = useAppSelector((state) => state.workspace.isGuest);
+  const isGuest = useAppSelector((state) => state.auth.isGuest);
+  const user = useAppSelector((state) => state.auth.user);
   const dispatch = useAppDispatch();
 
   const handleWorkspaceChange = async (id: string) => {
@@ -325,9 +327,16 @@ const Navbar = () => {
   };
 
   return (
-    <NavigationMenu className='fixed bottom-0 max-w-[1000px] w-full sm:flex hidden justify-center'>
-      <div className='grow w-full'>
-        <NavigationMenuList className='gap-2 bg-primary/10 backdrop-blur-lg p-2 m-2 rounded-lg justify-between items-center'>
+    <NavigationMenu
+      className={cn(
+        'fixed bottom-0 max-w-[1000px] w-full hidden justify-center bg-transparent',
+        {
+          'sm:flex': user || isGuest,
+        }
+      )}
+    >
+      <div className='grow w-full bg-transparent'>
+        <NavigationMenuList className='gap-2 bg-background border border-input p-2 m-2 rounded-lg justify-between items-center'>
           <NavigationMenuItem className='sm:gap-2 items-center hidden sm:flex'>
             <Button
               className='gap-2'
@@ -371,7 +380,7 @@ const Navbar = () => {
                       onClick={handleWorkspaceCreate}
                     >
                       <div className='flex gap-2 items-center'>
-                        <PlusIcon size={16} /> Create new workspace
+                        <Plus size={16} /> Create new workspace
                       </div>
                     </Button>
                     {workspaceState.workspaces.map((workspace) => (
@@ -421,7 +430,7 @@ const Navbar = () => {
           {workspaceState.workspaces.length === 0 && (
             <Button onClick={handleWorkspaceCreate}>
               <div className='flex gap-2 items-center'>
-                <PlusIcon size={16} /> Create new workspace
+                <Plus size={16} /> Create new workspace
               </div>
             </Button>
           )}
@@ -431,9 +440,7 @@ const Navbar = () => {
               <LightSwitch />
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Button size='icon'>
-                {isGuest ? <LogIn size={16} /> : <LogOut size={16} />}
-              </Button>
+              <AuthButton />
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenuList>
