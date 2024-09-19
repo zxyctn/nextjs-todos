@@ -5,12 +5,22 @@ import {
   updateWorkspaceName,
   deleteWorkspace,
 } from '@/lib/db';
+import { getSession } from '@/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { workspaces, selected } = await selectWorkspace(params.id);
+  const session = await getSession();
+
+  if (!session) {
+    throw new Error(`Session could not be found`);
+  }
+
+  const { workspaces, selected } = await selectWorkspace(
+    params.id,
+    session.user.id
+  );
 
   return Response.json({ workspaces, selected });
 }
@@ -29,7 +39,16 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { workspaces, selected } = await deleteWorkspace(params.id);
+  const session = await getSession();
+
+  if (!session) {
+    throw new Error(`Session could not be found`);
+  }
+
+  const { workspaces, selected } = await deleteWorkspace(
+    params.id,
+    session.user.id
+  );
 
   return Response.json({ workspaces, selected });
 }
