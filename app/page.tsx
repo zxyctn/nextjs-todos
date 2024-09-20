@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -31,6 +31,8 @@ const Home = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
+  const [isFetching, setIsFetching] = useState(false);
+
   const isLoading = useAppSelector((state) => state.workspace.isLoading);
   const isDragDisabled = useAppSelector(
     (state) => state.workspace.isDragDisabled.value
@@ -52,7 +54,9 @@ const Home = () => {
 
   const fetchWorkspaces = async () => {
     if (!isGuest) {
+      setIsFetching(true);
       const res = await fetch('/api/workspace');
+      setIsFetching(false);
 
       if (!res) {
         console.error('Failed fetching workspaces');
@@ -332,7 +336,7 @@ const Home = () => {
       if (isLoading.type === 'success') {
         toast.success(isLoading.message, {
           id: 'loading',
-          duration: 500,
+          duration: 1000,
         });
       } else {
         toast.error(isLoading.message, {
@@ -367,7 +371,7 @@ const Home = () => {
     }
   }, [user, isGuest]);
 
-  return !isGuest && !user ? (
+  return (!isGuest && !user) || isFetching ? (
     <div className='fixed top-0 left-0 w-screen h-screen flex items-center justify-center'>
       <Loader2 size={24} className='animate-spin' />
     </div>
