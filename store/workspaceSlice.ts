@@ -45,7 +45,7 @@ const initialState: {
             id: '111',
             name: '🚀 Create a new project',
             description: 'Create a new project with Next.js',
-            groupId: '1',
+            groupId: '11',
             createdAt: new Date(),
             activities: [
               {
@@ -60,7 +60,7 @@ const initialState: {
             id: '112',
             name: '🚀 Add Tailwind CSS',
             description: 'Add Tailwind CSS to the project',
-            groupId: '1',
+            groupId: '11',
             createdAt: new Date(),
             activities: [
               {
@@ -184,7 +184,7 @@ const initialState: {
     {
       id: '1',
       name: '💼 Work',
-      groupOrder: ['1', '2', '3'],
+      groupOrder: ['11', '12', '13'],
       groups: [
         {
           id: '11',
@@ -195,12 +195,12 @@ const initialState: {
               id: '111',
               name: '🚀 Create a new project',
               description: 'Create a new project with Next.js',
-              groupId: '1',
+              groupId: '11',
               createdAt: new Date(),
               activities: [
                 {
                   id: '1111',
-                  content: 'Create a new project with Next.js',
+                  content: 'Task created in group 📋 To do',
                   createdAt: new Date(),
                   taskId: '111',
                 },
@@ -210,12 +210,12 @@ const initialState: {
               id: '112',
               name: '🚀 Add Tailwind CSS',
               description: 'Add Tailwind CSS to the project',
-              groupId: '1',
+              groupId: '11',
               createdAt: new Date(),
               activities: [
                 {
                   id: '1121',
-                  content: 'Add Tailwind CSS to the project',
+                  content: 'Task created in group 📋 To do',
                   createdAt: new Date(),
                   taskId: '112',
                 },
@@ -292,7 +292,7 @@ export const workspaceSlice = createSlice({
       state,
       action: PayloadAction<{ id: string; name: string }>
     ) => {
-      state.current = {
+      const newWorkspace = {
         id: action.payload.id,
         name: action.payload.name,
         groupOrder: [],
@@ -302,12 +302,14 @@ export const workspaceSlice = createSlice({
         userId: '',
       };
 
+      state.current = newWorkspace;
+
       state.workspaces = [
         ...state.workspaces.map((w) => ({
           ...w,
           selected: false,
         })),
-        state.current,
+        newWorkspace,
       ];
     },
 
