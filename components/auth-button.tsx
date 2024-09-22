@@ -33,7 +33,7 @@ export default function AuthButton() {
       dispatch(
         setIsLoading({
           value: false,
-          message: 'Logged out with successfully',
+          message: 'Logged out successfully',
           type: 'success',
         })
       );
