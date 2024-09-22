@@ -23,7 +23,7 @@ export default function AuthButton() {
       dispatch(
         setIsLoading({
           value: true,
-          message: 'Logging out with GitHub...',
+          message: 'Logging out...',
           type: 'success',
         })
       );
@@ -33,7 +33,7 @@ export default function AuthButton() {
       dispatch(
         setIsLoading({
           value: false,
-          message: 'Logged out with GitHub successfully',
+          message: 'Logged out with successfully',
           type: 'success',
         })
       );
